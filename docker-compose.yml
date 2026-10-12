@@ -2,15 +2,38 @@ services:
   db:
     image: postgres:16-alpine
     container_name: dockside_db
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: dockside
+      POSTGRES_PASSWORD: dockside
+      POSTGRES_DB: dev_db
     ports:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  prometheus:
+    image: prom/prometheus
+    restart: unless-stopped
+    environment:
+      API_PORT: ${API_PORT}
+      WORKER_PORT: ${WORKER_PORT}
+    ports:
+      - "${PROM_PORT}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "${GF_PORT}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
 volumes:
   postgres_data:
+  grafana-data:
