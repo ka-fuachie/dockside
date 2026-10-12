@@ -6,7 +6,8 @@
   "scripts": {
     "dev:worker": "pnpm --filter @dockside/worker dev",
     "dev:cli": "pnpm --filter @dockside/cli dev",
-    "dev:web": "pnpm --filter @dockside/web dev"
+    "dev:web": "pnpm --filter @dockside/web dev",
+    "dev:api": "cd ./api && ./mvnw spring-boot:run"
   },
   "license": "MIT",
   "devEngines": {
