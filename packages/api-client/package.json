@@ -1,0 +1,16 @@
+{
+  "name": "@dockside/api-client",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "private": "true",
+  "scripts": {
+    "build": "tsc"
+  },
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  }
+}

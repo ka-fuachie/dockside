@@ -1,0 +1,24 @@
+{
+  "name": "dockside",
+  "version": "0.1.0",
+  "description": "",
+  "private": "true",
+  "scripts": {
+    "dev:worker": "pnpm --filter @dockside/worker dev",
+    "dev:cli": "pnpm --filter @dockside/cli dev",
+    "dev:web": "pnpm --filter @dockside/web dev"
+  },
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.11.2",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.11.2",
+  "devDependencies": {
+    "oxlint": "^1.87.0",
+    "typescript": "^7.0.2"
+  }
+}
