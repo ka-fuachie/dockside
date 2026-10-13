@@ -37,7 +37,7 @@ public class SecurityConfig {
       .authorizeHttpRequests(a -> a
         .requestMatchers("/auth/*", "/actuator/health", "/error").permitAll()
         .requestMatchers(HttpMethod.POST, "/sites").hasRole(Role.ADMIN.name())
-        .requestMatchers(HttpMethod.POST, "/sites/*/deplyments/**").hasAnyRole(
+        .requestMatchers(HttpMethod.POST, "/sites/*/deployments/**").hasAnyRole(
           Role.ADMIN.name(), Role.DEV.name()
         )
         .anyRequest().authenticated()
