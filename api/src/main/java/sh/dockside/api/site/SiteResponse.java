@@ -9,7 +9,7 @@ public record SiteResponse(
   Integer currentVersion,
   Instant createdAt
 ) {
-  static SiteResponse from(Site s) {
+  public static SiteResponse from(Site s) {
     return new SiteResponse(
       s.getId(),
       s.getSlug(),

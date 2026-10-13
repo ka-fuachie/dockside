@@ -44,6 +44,7 @@ public class SecurityConfig {
           Role.ADMIN.name(), Role.DEV.name()
         )
         .requestMatchers("/agent/**").hasRole("AGENT")
+        .requestMatchers(HttpMethod.POST, "/deployments/*/rollback").hasAnyRole(Role.ADMIN.name(), Role.DEV.name())
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
