@@ -20,10 +20,19 @@ import sh.dockside.api.user.Role;
 public class SecurityConfig {
   private final JwtAuthFilter jwtAuthFilter;
   private final AgentTokenFilter agentTokenFilter;
+  private final ApiAuthEntryPoint entryPoint;
+  private final ApiAccessDeniedHandler deniedHandler;
 
-  public SecurityConfig(JwtAuthFilter jwtFilter, AgentTokenFilter agentTokenFilter) {
+  public SecurityConfig(
+    JwtAuthFilter jwtFilter,
+    AgentTokenFilter agentTokenFilter,
+    ApiAuthEntryPoint entryPoint,
+    ApiAccessDeniedHandler deniedHandler
+  ) {
     this.jwtAuthFilter = jwtFilter;
     this.agentTokenFilter = agentTokenFilter;
+    this.entryPoint = entryPoint;
+    this.deniedHandler = deniedHandler;
   }
 
   @Bean
@@ -45,10 +54,14 @@ public class SecurityConfig {
         )
         .requestMatchers("/agent/**").hasRole("AGENT")
         .requestMatchers(HttpMethod.POST, "/deployments/*/rollback").hasAnyRole(Role.ADMIN.name(), Role.DEV.name())
+        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
       .addFilterBefore(agentTokenFilter, UsernamePasswordAuthenticationFilter.class)
+      .exceptionHandling(e -> e
+        .authenticationEntryPoint(entryPoint)
+        .accessDeniedHandler(deniedHandler))
       .build();
   }
 }
