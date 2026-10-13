@@ -36,7 +36,10 @@ public class SecurityConfig {
       .httpBasic(b -> b.disable())
       .authorizeHttpRequests(a -> a
         .requestMatchers("/auth/*", "/actuator/health", "/error").permitAll()
-        .requestMatchers(HttpMethod.POST, "/sites/**").hasRole(Role.ADMIN.name())
+        .requestMatchers(HttpMethod.POST, "/sites").hasRole(Role.ADMIN.name())
+        .requestMatchers(HttpMethod.POST, "/sites/*/deplyments/**").hasAnyRole(
+          Role.ADMIN.name(), Role.DEV.name()
+        )
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
