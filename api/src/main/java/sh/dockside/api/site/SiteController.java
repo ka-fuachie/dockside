@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/sites")
+@SecurityRequirement(name = "bearerAuth")
 public class SiteController {
   private final SiteRepository sites;
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import sh.dockside.api.deployment.DeploymentRepository;
 import sh.dockside.api.deployment.DeploymentResponse;
@@ -20,6 +21,7 @@ import sh.dockside.api.incident.IncidentRepository;
 
 @RestController
 @RequestMapping("/agent")
+@SecurityRequirement(name = "agentToken")
 public class AgentController {
   private final DeploymentRepository deployments;
   private final IncidentRepository incidents;

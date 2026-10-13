@@ -23,10 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import sh.dockside.api.site.SiteRepository;
 
 @RestController
 @RequestMapping("/sites/{siteId}/deployments")
+@SecurityRequirement (name = "bearerAuth")
 public class DeploymentController {
   private static final String DEPLOYMENT_CONFIG = "dockside.toml";
 

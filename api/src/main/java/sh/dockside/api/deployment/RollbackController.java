@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import sh.dockside.api.site.SiteRepository;
 import sh.dockside.api.site.SiteResponse;
 
 @RestController
 @RequestMapping("/deployments")
+@SecurityRequirement (name = "bearerAuth")
 public class RollbackController {
   private final DeploymentRepository deployments;
   private final SiteRepository sites;
