@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import sh.dockside.api.agent.AgentTokenFilter;
 import sh.dockside.api.auth.JwtAuthFilter;
 import sh.dockside.api.user.Role;
 
@@ -18,9 +19,11 @@ import sh.dockside.api.user.Role;
 @EnableWebSecurity
 public class SecurityConfig {
   private final JwtAuthFilter jwtAuthFilter;
+  private final AgentTokenFilter agentTokenFilter;
 
-  public SecurityConfig(JwtAuthFilter jwtFilter) {
+  public SecurityConfig(JwtAuthFilter jwtFilter, AgentTokenFilter agentTokenFilter) {
     this.jwtAuthFilter = jwtFilter;
+    this.agentTokenFilter = agentTokenFilter;
   }
 
   @Bean
@@ -40,9 +43,11 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.POST, "/sites/*/deployments/**").hasAnyRole(
           Role.ADMIN.name(), Role.DEV.name()
         )
+        .requestMatchers("/agent/**").hasRole("AGENT")
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+      .addFilterBefore(agentTokenFilter, UsernamePasswordAuthenticationFilter.class)
       .build();
   }
 }

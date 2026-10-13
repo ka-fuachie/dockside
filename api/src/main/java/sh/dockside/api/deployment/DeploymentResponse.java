@@ -9,7 +9,7 @@ public record DeploymentResponse(
   DeploymentStatus status,
   Instant createdAt
 ) {
-  static DeploymentResponse from(Deployment d) {
+  public static DeploymentResponse from(Deployment d) {
     return new DeploymentResponse(
       d.getId(),
       d.getSite().getId(),

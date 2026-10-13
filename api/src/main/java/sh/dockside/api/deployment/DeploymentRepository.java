@@ -10,4 +10,6 @@ public interface DeploymentRepository extends JpaRepository<Deployment, Long> {
   Optional<Deployment> findFirstBySiteIdOrderByVersionDesc(Long siteId);
 
   Page<Deployment> findBySiteIdOrderByVersionDesc(Long siteId, Pageable pageable);
+
+  Optional<Deployment> findFirstByStatusOrderByCreatedAtAsc(DeploymentStatus status);
 }
