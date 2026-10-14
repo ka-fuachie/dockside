@@ -8,6 +8,7 @@
     "dev:cli": "pnpm --filter @dockside/cli dev",
     "dev:web": "pnpm --filter @dockside/web dev",
     "start:api": "cd ./api && ./mvnw spring-boot:run",
+    "test:api-client": "pnpm --filter @dockside/api-client test",
     "test:api": "cd ./api && ./mvnw test"
   },
   "license": "MIT",
