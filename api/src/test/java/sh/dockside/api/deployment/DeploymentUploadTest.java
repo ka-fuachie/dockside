@@ -9,6 +9,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -22,6 +23,8 @@ import org.springframework.web.client.RestClient;
 import sh.dockside.api.TestPostgres;
 import sh.dockside.api.auth.LoginResponse;
 import sh.dockside.api.common.ErrorResponse;
+import sh.dockside.api.incident.IncidentRepository;
+import sh.dockside.api.site.SiteRepository;
 import sh.dockside.api.site.SiteResponse;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -33,9 +36,16 @@ public class DeploymentUploadTest {
 
   private RestClient client;
 
+  @Autowired DeploymentRepository deployments;
+  @Autowired SiteRepository sites;
+  @Autowired IncidentRepository incidents;
+
   @BeforeEach
   void setup() {
     client = RestClient.builder().baseUrl("http://localhost:" + port).build();
+    incidents.deleteAll();
+    deployments.deleteAll();
+    sites.deleteAll();
   }
 
   private String token(String user, String pass) {

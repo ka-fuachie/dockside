@@ -5,6 +5,7 @@ import java.time.Instant;
 public record DeploymentResponse(
   Long id,
   Long siteId,
+  String siteSlug,
   Integer version,
   DeploymentStatus status,
   Instant createdAt
@@ -13,6 +14,7 @@ public record DeploymentResponse(
     return new DeploymentResponse(
       d.getId(),
       d.getSite().getId(),
+      d.getSite().getSlug(),
       d.getVersion(),
       d.getStatus(),
       d.getCreatedAt()
