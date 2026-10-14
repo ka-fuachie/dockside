@@ -1,3 +1,2 @@
-export function test() {
-  console.log("test api client");
-}
+export { createClient, type ApiClientState, type ApiClientCallbacks } from "./lib/client";
+export { ApiError } from "./lib/error";
