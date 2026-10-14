@@ -164,12 +164,26 @@ describe("transport", () => {
   });
 
   it("uploads without a manual content type", async () => {
-    responder = () => json({ id: 7, siteId: 1, version: 1, status: "running", createdAt: "now" });
+    responder = () =>
+      json({ id: 7, siteId: 1, siteSlug: "demo", version: 1, status: "running", createdAt: "now" });
     stubFetch();
     const client = createClient("http://api", {});
     const file = new Blob(["<html></html>"], { type: "text/html" });
     await client.deployments.upload({ siteId: 1, file });
     expect(seen[0].headers.get("content-type")).toBeNull();
     expect(seen[0].body).toBeInstanceOf(FormData);
+  });
+
+  it("returns bytes instead of json for artifacts", async () => {
+    responder = () =>
+      new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: { "content-type": "application/zip" },
+      });
+    stubFetch();
+    const client = createClient("http://api", { agentToken: "tok" });
+    const bytes = await client.agent.artifact({ deploymentId: 5 });
+    expect(bytes).toBeInstanceOf(Uint8Array);
+    expect(seen[0].url).toBe("http://api/agent/deployments/5/artifact");
   });
 });

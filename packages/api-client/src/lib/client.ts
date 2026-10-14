@@ -3,7 +3,7 @@ import { agent } from "./contracts/agent";
 import { auth, AuthResponseSchema } from "./contracts/auth";
 import { deployments } from "./contracts/deployments";
 import { sites } from "./contracts/sites";
-import { ContractContext, ContractEntry } from "./contracts/utils";
+import { ContractContext, ContractEntityResponseKind, ContractEntry } from "./contracts/utils";
 import { makeRequest } from "./request";
 import { ApiError, ErrorResponseSchema } from "./error";
 
@@ -44,6 +44,11 @@ function buildMethod<T extends ContractEntry<z.ZodType, z.ZodType>>(
         if (res.status == 204) {
           return Promise.resolve(null);
         }
+
+        if (entry.responseKind == ContractEntityResponseKind.BYTES) {
+          return res.arrayBuffer().then((buf) => new Uint8Array(buf));
+        }
+
         return res.json();
       })();
 

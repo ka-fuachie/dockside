@@ -8,10 +8,16 @@ export type ContractContext = {
   signal?: AbortSignal;
 };
 
+export const ContractEntityResponseKind = {
+  JSON: "json",
+  BYTES: "bytes",
+};
+
 export type ContractEntry<Req extends z.ZodType, Res extends z.ZodType> = {
   RequestSchema: Req;
   ResponseSchema: Res;
   handler: (payload: z.infer<Req>, ctx: ContractContext) => Promise<Response>;
+  responseKind: (typeof ContractEntityResponseKind)[keyof typeof ContractEntityResponseKind];
 };
 
 export type ContractClient<T extends Record<string, ContractEntry<any, any>>> = {
@@ -25,8 +31,14 @@ export function entry<Req extends z.ZodType, Res extends z.ZodType>(
   RequestSchema: Req,
   ResponseSchema: Res,
   handler: ContractEntry<Req, Res>["handler"],
+  responseKind?: ContractEntry<Req, Res>["responseKind"],
 ): ContractEntry<Req, Res> {
-  return { RequestSchema, ResponseSchema, handler };
+  return {
+    RequestSchema,
+    ResponseSchema,
+    handler,
+    responseKind: responseKind ?? ContractEntityResponseKind.JSON,
+  };
 }
 
 export function pageOf<T extends z.ZodType<any, any>>(item: T) {
@@ -57,6 +69,7 @@ export const DeploymentStatusSchema = z.enum(["running", "success", "failed"]);
 export const DeploymentSchema = z.object({
   id: z.number(),
   siteId: z.number(),
+  siteSlug: z.string(),
   version: z.number(),
   status: DeploymentStatusSchema,
   createdAt: z.string(),
