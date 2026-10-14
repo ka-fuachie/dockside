@@ -1,16 +1,23 @@
 {
-  "name": "@dockside/config",
+  "name": "@dockside/deployment-config",
   "version": "0.1.0",
   "description": "",
   "type": "module",
   "private": "true",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run"
   },
   "exports": {
     ".": {
       "source": "./src/index.ts",
       "default": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "smol-toml": "^1.9.1"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.4"
   }
 }

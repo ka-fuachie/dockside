@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@dockside/api-client": "workspace:*",
-    "@dockside/config": "workspace:*"
+    "@dockside/deployment-config": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.23.15"

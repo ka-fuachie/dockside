@@ -1,6 +1,6 @@
 import "zod/compile";
 import * as z from "zod";
-import { ContractEntityResponseKind, entry } from "./utils";
+import { ContractEntityResponseKind, entry, SiteSchema } from "./utils";
 import { DeploymentSchema } from "./utils";
 
 const NextJobRequestSchema = z.object({});
@@ -39,7 +39,7 @@ export const agent = {
       },
     }),
   ),
-  activate: entry(ActivateRequestSchema, z.null(), (payload, ctx) =>
+  activate: entry(ActivateRequestSchema, SiteSchema, (payload, ctx) =>
     ctx.post(`agent/deployments/${payload.deploymentId}/activate`),
   ),
 } as const;

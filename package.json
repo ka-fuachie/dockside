@@ -9,6 +9,7 @@
     "dev:web": "pnpm --filter @dockside/web dev",
     "start:api": "cd ./api && ./mvnw spring-boot:run",
     "test:api-client": "pnpm --filter @dockside/api-client test",
+    "test:deployment-config": "pnpm --filter @dockside/deployment-config test",
     "test:api": "cd ./api && ./mvnw test"
   },
   "license": "MIT",
