@@ -73,7 +73,9 @@ describe("Worker deploy", () => {
     w.stop();
 
     expect(agent.activate).not.toHaveBeenCalled();
+    // @ts-expect-error
     expect(agent.result.mock.calls[0][0]).toMatchObject({ deploymentId: 1, success: false });
+    // @ts-expect-error
     expect(String(agent.result.mock.calls[0][0].logs)).toContain("entry not found");
     await expect(stat(join(dir, "demo", "current"))).rejects.toThrow();
     expect(w.metrics.failure).toBe(1);
@@ -87,6 +89,7 @@ describe("Worker deploy", () => {
     await waitFor(() => agent.result.mock.calls.length === 1);
     w.stop();
 
+    // @ts-expect-error
     expect(String(agent.result.mock.calls[0][0].logs)).toContain("zip-slip");
     expect(agent.activate).not.toHaveBeenCalled();
     await expect(stat(join(tmpdir(), "x"))).rejects.toThrow();
@@ -102,6 +105,7 @@ describe("Worker deploy", () => {
     await waitFor(() => agent.result.mock.calls.length === 1);
     w.stop();
 
+    // @ts-expect-error
     expect(String(agent.result.mock.calls[0][0].logs)).toContain("bad dockside.toml");
     expect(agent.activate).not.toHaveBeenCalled();
   });
