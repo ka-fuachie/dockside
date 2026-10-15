@@ -122,7 +122,7 @@ function buildMethodWithRefresh<T extends ContractEntry<z.ZodType, z.ZodType>>(
 
 export function createClient(
   baseUrl: string,
-  defaultState: ApiClientState,
+  defaultState?: ApiClientState,
   callbacks?: ApiClientCallbacks,
 ) {
   const state = { ...defaultState };

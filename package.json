@@ -6,12 +6,15 @@
   "scripts": {
     "dev:worker": "pnpm --filter @dockside/worker dev",
     "dev:cli": "pnpm --filter @dockside/cli dev",
+    "start:cli": "pnpm --filter @dockside/cli start",
     "dev:web": "pnpm --filter @dockside/web dev",
     "start:api": "cd ./api && ./mvnw spring-boot:run",
     "test:worker": "pnpm --filter @dockside/worker test",
     "test:api-client": "pnpm --filter @dockside/api-client test",
     "test:deployment-config": "pnpm --filter @dockside/deployment-config test",
-    "test:api": "cd ./api && ./mvnw test"
+    "test:api": "cd ./api && ./mvnw test",
+    "link:cli": "pnpm --filter @dockside/cli clink",
+    "unlink:cli": "pnpm --filter @dockside/cli unclink"
   },
   "license": "MIT",
   "devEngines": {

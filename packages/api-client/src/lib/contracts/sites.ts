@@ -15,11 +15,11 @@ const OneRequestSchema = z.object({
 });
 
 export const sites = {
-  list: entry(ListRequestSchema, pageOf(SiteSchema), (payload, ctx) =>
+  list: entry(z.union([ListRequestSchema, z.void()]), pageOf(SiteSchema), (payload, ctx) =>
     ctx.get("sites", {
       query: {
-        page: payload.page,
-        size: payload.size,
+        page: payload?.page,
+        size: payload?.size,
       },
     }),
   ),
