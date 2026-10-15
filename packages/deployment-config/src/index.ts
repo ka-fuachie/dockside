@@ -10,9 +10,11 @@ const DefaultConfig: DeploymentConfig = {
   warnings: [],
 };
 
+export const DEPLOYMENT_CONFIG_FILE = "dockside.toml";
+
 const ALLOWED_KEYS = new Set(["publish"]);
 
-export function parseDocksideToml(source: string | null) {
+export function parseDeploymentConfig(source: string | null) {
   if (source == null) return DefaultConfig;
 
   const normalisedSource = source.trim();

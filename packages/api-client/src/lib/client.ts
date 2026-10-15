@@ -145,3 +145,5 @@ export function createClient(
     agent: buildDomain(agent),
   } as const;
 }
+
+export type ApiClient = ReturnType<typeof createClient>;

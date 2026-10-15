@@ -134,7 +134,7 @@ describe("auto refresh", () => {
     responder = () => error("UNAUTHORIZED", 401);
     stubFetch();
     const client = createClient("http://api", { agentToken: "tok" });
-    await expect(client.agent.nextJob({})).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    await expect(client.agent.nextJob()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     expect(seen).toHaveLength(1);
   });
 });
@@ -149,7 +149,7 @@ describe("transport", () => {
       { agentToken: "tok" },
       { onError: (e) => errors.push(e) },
     );
-    await expect(client.agent.nextJob({})).resolves.toBeNull();
+    await expect(client.agent.nextJob()).resolves.toBeNull();
     expect(errors).toHaveLength(0);
   });
 

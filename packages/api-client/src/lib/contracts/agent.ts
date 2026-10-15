@@ -3,8 +3,6 @@ import * as z from "zod";
 import { ContractEntityResponseKind, entry, SiteSchema } from "./utils";
 import { DeploymentSchema } from "./utils";
 
-const NextJobRequestSchema = z.object({});
-
 const ArtifactRequestSchema = z.object({
   deploymentId: z.number(),
 });
@@ -22,7 +20,7 @@ const ActivateRequestSchema = z.object({
 });
 
 export const agent = {
-  nextJob: entry(NextJobRequestSchema, DeploymentSchema.nullable(), (_payload, ctx) =>
+  nextJob: entry(z.void(), DeploymentSchema.nullable(), (_payload, ctx) =>
     ctx.get("agent/next-job"),
   ),
   artifact: entry(
