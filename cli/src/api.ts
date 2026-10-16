@@ -7,13 +7,13 @@ export async function createAuthedClient(profile: string) {
     session = await loadSession(profile);
   } catch {
     throw new Error(
-      `failed to load session (profile "${profile}") — run "dockside login --profile ${profile}"`,
+      `failed to load session (profile "${profile}"), run "dockside login --profile ${profile}"`,
     );
   }
 
   if (session == null) {
     throw new Error(
-      `not logged in (profile "${profile}") — run "dockside login --profile ${profile}"`,
+      `not logged in (profile "${profile}"), run "dockside login --profile ${profile}"`,
     );
   }
 
