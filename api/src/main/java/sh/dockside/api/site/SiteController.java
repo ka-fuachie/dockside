@@ -14,20 +14,28 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import sh.dockside.api.health.HealthCheckRepository;
 
 @RestController
 @RequestMapping("/sites")
 @SecurityRequirement(name = "bearerAuth")
 public class SiteController {
   private final SiteRepository sites;
+  private final HealthCheckRepository health;
 
-  public SiteController(SiteRepository sites) {
+  public SiteController(SiteRepository sites, HealthCheckRepository health) {
     this.sites = sites;
+    this.health = health;
+  }
+
+  private SiteResponse withHealth(Site site) {
+    var healthCheck = health.findTopBySiteIdOrderByCheckedAtDesc(site.getId()).orElse(null);
+    return SiteResponse.from(site, healthCheck);
   }
 
   @GetMapping
   public Page<SiteResponse> list(Pageable pageable) {
-    return sites.findAll(pageable).map(SiteResponse::from);
+    return sites.findAll(pageable).map(this::withHealth);
   }
 
   @PostMapping
@@ -46,6 +54,6 @@ public class SiteController {
   public SiteResponse one(@PathVariable Long id) {
     var site = sites.findById(id)
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "site not found"));
-    return SiteResponse.from(site);
+    return withHealth(site);
   }
 }
