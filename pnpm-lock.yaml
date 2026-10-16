@@ -302,6 +302,9 @@ importers:
       pino:
         specifier: ^10.4.0
         version: 10.4.0
+      prom-client:
+        specifier: ^15.1.3
+        version: 15.1.3
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -317,7 +320,7 @@ importers:
         version: 4.23.15
       vitest:
         specifier: ^5.0.4
-        version: 5.0.4(@types/node@26.6.5)(jsdom@25.0.1)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+        version: 5.0.4(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(jsdom@25.0.1)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
 packages:
 
@@ -722,6 +725,10 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@opentelemetry/api@1.9.1':
+    resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
+    engines: {node: '>=8.0.0'}
 
   '@oxc-parser/binding-android-arm-eabi@0.139.0':
     resolution: {integrity: sha512-22EsXTA3Vc7OvrF4bfT48PFln2UbxkVgrp/Tm32qLw76Dv7SmcInfClJe6yPYamnli6HiqasnESZ5ezN+X4ybg==}
@@ -1632,6 +1639,9 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  bintrees@1.0.2:
+    resolution: {integrity: sha512-VOMgTMwjAaUG580SXn3LacVgjurrbMme7ZZNYGSSV7mmtY6QQRh0Eg3pwIcntQ77DErK1L0NxkbetjcoXzVwKw==}
+
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
     engines: {node: 20 || >=22}
@@ -2424,6 +2434,11 @@ packages:
   process-warning@5.1.1:
     resolution: {integrity: sha512-oCkNVj4OKnKEcocVBcDfiIugN1/cE6rgfT3nCtzeqZPA8+rIxMaQ0xXzIkGP8Gj2qUaP1UR7uhJ1VD8lUCpzCg==}
 
+  prom-client@15.1.3:
+    resolution: {integrity: sha512-6ZiOBfCywsD4k1BN9IX0uZhF+tJkV8q8llP64G5Hajs4JOeVLPCwpPVcpXy3BwYiUGgyJzsJJQeOIv7+hDSq8g==}
+    engines: {node: ^16 || ^18 || >=20}
+    deprecated: prom-client has been replaced by @prometheus-io/client
+
   pump@3.0.4:
     resolution: {integrity: sha512-VS7sjc6KR7e1ukRFhQSY5LM2uBWAUPiOPa/A3mkKmiMwSmRFUITt0xuj+/lesgnCv+dPIEYlkzrcyXgquIHMcA==}
 
@@ -2590,6 +2605,9 @@ packages:
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
+
+  tdigest@0.1.3:
+    resolution: {integrity: sha512-zbRt+lT+/H4fRItHshczHErVCQnitJk8MfMT24MqFJf3YL7SJJPqGIGeuOdvxXxM/AHFzKBl7WoyaYwqO9s3Kw==}
 
   thread-stream@4.2.0:
     resolution: {integrity: sha512-e2zZ96wSChazBsbENf/Pcm/4swHt2cEKQ92rhUjkL9GCKiTDJIaTBenjE/m9DXi0QBmTMDkFDdOomUy20A1tDQ==}
@@ -3256,6 +3274,8 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
 
+  '@opentelemetry/api@1.9.1': {}
+
   '@oxc-parser/binding-android-arm-eabi@0.139.0':
     optional: true
 
@@ -3877,6 +3897,8 @@ snapshots:
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.11.28: {}
+
+  bintrees@1.0.2: {}
 
   brace-expansion@5.0.12:
     dependencies:
@@ -4664,6 +4686,11 @@ snapshots:
 
   process-warning@5.1.1: {}
 
+  prom-client@15.1.3:
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      tdigest: 0.1.3
+
   pump@3.0.4:
     dependencies:
       end-of-stream: 1.4.5
@@ -4807,6 +4834,10 @@ snapshots:
   tailwindcss@4.3.3: {}
 
   tapable@2.3.3: {}
+
+  tdigest@0.1.3:
+    dependencies:
+      bintrees: 1.0.2
 
   thread-stream@4.2.0:
     dependencies:
@@ -4957,7 +4988,7 @@ snapshots:
     optionalDependencies:
       vite: 8.3.4(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
 
-  vitest@5.0.4(@types/node@26.6.5)(jsdom@25.0.1)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)):
+  vitest@5.0.4(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(jsdom@25.0.1)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -4974,6 +5005,7 @@ snapshots:
       vite: 8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
       why-is-node-running: 3.2.1
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/node': 26.6.5
       jsdom: 25.0.1
     transitivePeerDependencies:

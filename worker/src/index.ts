@@ -1,12 +1,17 @@
+import { healthChecker } from "./health";
 import { env } from "./lib/env";
 import { logger } from "./lib/logger";
 import { createServer } from "./server";
 import { worker } from "./worker";
 
-const server = createServer(worker);
+const server = createServer(worker, healthChecker);
 server.listen(env.WORKER_PORT, () => {
-  logger.info({ port: env.WORKER_PORT, sites: env.SITES_DIR }, "worker starting");
+  logger.info(
+    { port: env.WORKER_PORT, sites: env.SITES_DIR },
+    "worker and health checker starting",
+  );
   worker.start();
+  healthChecker.start();
 });
 
 let shuttingDown = false;
@@ -16,6 +21,7 @@ function shutdown(signal: string) {
 
   logger.info({ signal }, "shutting down");
   worker.stop();
+  healthChecker.stop();
   server.closeIdleConnections();
   server.close(() => process.exit(0));
   setTimeout(() => process.exit(1), 10_000).unref();

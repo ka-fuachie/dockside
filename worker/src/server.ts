@@ -1,39 +1,24 @@
 import http from "node:http";
 import { Worker } from "./lib/worker";
+import { HealthChecker } from "./lib/health";
+import { Registry } from "prom-client";
 
-function metric(label: string, description: string, type: string, value: string) {
-  return `# HELP ${label} ${description}\n` + `# TYPE ${label} ${type}\n` + `${label} ${value}\n`;
-}
-
-export function createServer(worker: Worker) {
-  return http.createServer((req, res) => {
+export function createServer(worker: Worker, healthChecker: HealthChecker) {
+  return http.createServer(async (req, res) => {
     if (req.url == "/healthz") {
       res.writeHead(200, { "content-type": "text/plain" }).end("ok");
       return;
     }
 
     if (req.url == "/metrics") {
-      const body = [
-        metric(
-          "dockside_deploy_success_total",
-          "Successful deploys",
-          "counter",
-          worker.metrics.success.toString(),
-        ),
-        metric(
-          "dockside_deploy_failure_total",
-          "Failed deploys",
-          "counter",
-          worker.metrics.failure.toString(),
-        ),
-        metric(
-          "dockside_worker_last_tick_ms",
-          "Last tick epoch ms",
-          "gauge",
-          worker.metrics.lastTick.toString(),
-        ),
-      ].join("\n");
-      res.writeHead(200, { "content-type": "text/plain; version=0.0.4; charset=utf-8" }).end(body);
+      try {
+        const mergedRegistry = Registry.merge([worker.metrics, healthChecker.metrics]);
+        res.writeHead(200, { "Content-Type": mergedRegistry.contentType });
+        res.end(await mergedRegistry.metrics());
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+        res.end(`Error generating metrics: ${(err as Error).message}`);
+      }
       return;
     }
 

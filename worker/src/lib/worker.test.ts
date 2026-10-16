@@ -11,6 +11,13 @@ const enc = new TextEncoder();
 const zip = (files: Record<string, string>) =>
   zipSync(Object.fromEntries(Object.entries(files).map(([k, v]) => [k, enc.encode(v)])));
 
+const metric = async (worker: Worker, name: string) => {
+  const m = worker.metrics.getSingleMetric(name) as unknown as {
+    get(): Promise<{ values: Array<{ value: number }> }>;
+  };
+  return (await m.get()).values[0]?.value;
+};
+
 const job = { id: 1, siteId: 7, siteSlug: "demo", version: 3, status: "running", createdAt: "now" };
 
 function harness(zipBytes: Uint8Array | null, opts?: { jobs?: unknown[] }) {
@@ -61,7 +68,7 @@ describe("Worker deploy", () => {
     expect(agent.activate).toHaveBeenCalledWith({ deploymentId: 1 });
     expect(agent.result).not.toHaveBeenCalled();
     expect(await readFile(join(dir, "demo", "current", "index.html"), "utf8")).toBe("<html>");
-    expect(w.metrics.success).toBe(1);
+    expect(await metric(w, "dockside_deploy_success_total")).toBe(1);
   });
 
   it("fails the job when the entry file is missing", async () => {
@@ -78,7 +85,7 @@ describe("Worker deploy", () => {
     // @ts-expect-error
     expect(String(agent.result.mock.calls[0][0].logs)).toContain("entry not found");
     await expect(stat(join(dir, "demo", "current"))).rejects.toThrow();
-    expect(w.metrics.failure).toBe(1);
+    expect(await metric(w, "dockside_deploy_failure_total")).toBe(1);
   });
 
   it("rejects zip-slip without writing outside sitesDir", async () => {

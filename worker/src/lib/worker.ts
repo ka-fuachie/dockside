@@ -4,6 +4,8 @@ import { ApiClient, ApiError } from "@dockside/api-client";
 import { Logger } from "pino";
 import { unzipSync } from "fflate";
 import { DEPLOYMENT_CONFIG_FILE, parseDeploymentConfig } from "@dockside/deployment-config";
+import { wait } from "./utils";
+import { Counter, Gauge, Registry } from "prom-client";
 
 type Metrics = {
   success: number;
@@ -14,23 +16,41 @@ type Metrics = {
 const DEFAULT_MIN_DELAY_MS = 10_000;
 const TAIL = 4096;
 
-const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
 export class Worker {
   #abortController: AbortController | null;
-  #metrics: Metrics;
   #api: ApiClient;
   #sitesDir: string;
   #baseLogger: Logger;
   #minDelayMs: number;
 
+  #metrics: Registry;
+  #deploySuccess: Counter;
+  #deployFailure: Counter;
+  #lastTick: Gauge;
+
   constructor(api: ApiClient, sitesDir: string, baseLogger: Logger, minDelayMs?: number) {
     this.#abortController = null;
-    this.#metrics = { success: 0, failure: 0, lastTick: 0 };
     this.#api = api;
     this.#sitesDir = sitesDir;
     this.#baseLogger = baseLogger;
     this.#minDelayMs = minDelayMs ?? DEFAULT_MIN_DELAY_MS;
+
+    this.#metrics = new Registry();
+    this.#deploySuccess = new Counter({
+      name: "dockside_deploy_success_total",
+      help: "Successful deploys",
+      registers: [this.#metrics],
+    });
+    this.#deployFailure = new Counter({
+      name: "dockside_deploy_failure_total",
+      help: "Failed deploys",
+      registers: [this.#metrics],
+    });
+    this.#lastTick = new Gauge({
+      name: "dockside_worker_last_tick_ms",
+      help: "Last tick epoch ms",
+      registers: [this.#metrics],
+    });
   }
 
   get metrics() {
@@ -53,7 +73,7 @@ export class Worker {
           isUnauthorized = err instanceof ApiError && err.status === 401;
         })
         .finally(() => {
-          this.#metrics.lastTick = Date.now();
+          this.#lastTick.set(Date.now());
         }),
       wait(this.#minDelayMs),
     ]);
@@ -116,7 +136,7 @@ export class Worker {
 
       lines.push(`published v${version} publish=${publish}`);
       logger.info({ publish }, "published");
-      this.#metrics.success++;
+      this.#deploySuccess.inc();
       await this.#api.agent.activate({ deploymentId: id });
       logger.info("activated");
     } catch (err) {
@@ -128,7 +148,7 @@ export class Worker {
       const message = (err as Error).message;
       lines.push(`FAIL: ${message}`);
       logger.error({ err: message }, "deploy failed");
-      this.#metrics.failure++;
+      this.#deployFailure.inc();
       await this.#api.agent.result({
         deploymentId: id,
         success: false,
