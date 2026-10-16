@@ -19,6 +19,15 @@ const ActivateRequestSchema = z.object({
   deploymentId: z.number(),
 });
 
+const AgentSiteSchema = z.object({ id: z.number(), slug: z.string() });
+
+const HealthRequestSchema = z.object({
+  siteId: z.number(),
+  up: z.boolean(),
+  latencyMs: z.number(),
+  bytes: z.number().optional(),
+});
+
 export const agent = {
   nextJob: entry(z.void(), DeploymentSchema.nullable(), (_payload, ctx) =>
     ctx.get("agent/next-job"),
@@ -39,5 +48,15 @@ export const agent = {
   ),
   activate: entry(ActivateRequestSchema, SiteSchema, (payload, ctx) =>
     ctx.post(`agent/deployments/${payload.deploymentId}/activate`),
+  ),
+  sites: entry(z.void(), z.array(AgentSiteSchema), (_payload, ctx) => ctx.get("agent/sites")),
+  health: entry(HealthRequestSchema, z.null(), (payload, ctx) =>
+    ctx.post(`agent/sites/${payload.siteId}/health`, {
+      body: {
+        up: payload.up,
+        latencyMs: payload.latencyMs,
+        bytes: payload.bytes ?? 0,
+      },
+    }),
   ),
 } as const;

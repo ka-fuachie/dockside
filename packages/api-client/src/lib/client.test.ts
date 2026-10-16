@@ -38,7 +38,15 @@ afterEach(() => {
 });
 
 const tokens = { accessToken: "a1", refreshToken: "r1" };
-const site = { id: 1, slug: "demo", name: "Demo", currentVersion: null, createdAt: "now" };
+const site = {
+  id: 1,
+  slug: "demo",
+  name: "Demo",
+  currentVersion: null,
+  createdAt: "now",
+  up: null,
+  checkedAt: null,
+};
 const error = (code: string, status: number) => json({ code, message: code }, status);
 
 describe("auth", () => {
@@ -165,7 +173,16 @@ describe("transport", () => {
 
   it("uploads without a manual content type", async () => {
     responder = () =>
-      json({ id: 7, siteId: 1, siteSlug: "demo", version: 1, status: "running", createdAt: "now" });
+      json({
+        id: 7,
+        siteId: 1,
+        siteSlug: "demo",
+        version: 1,
+        status: "running",
+        createdAt: "now",
+        up: null,
+        cheackedAt: null,
+      });
     stubFetch();
     const client = createClient("http://api", {});
     const file = new Blob(["<html></html>"], { type: "text/html" });
