@@ -34,8 +34,6 @@ public class HealthReportTest {
   @Autowired DeploymentRepository deployments;
   @Autowired SiteRepository sites;
 
-  private record AgentSiteEntry(Long id, String slug) {}
-
   @BeforeEach
   void setup() {
     client = RestClient.builder().baseUrl("http://localhost:" + port).build();
