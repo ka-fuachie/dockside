@@ -3,11 +3,6 @@ import { Logger } from "pino";
 import { wait } from "./utils";
 import { Gauge, Registry } from "prom-client";
 
-type HealthMetrics = {
-  up: Record<string, number>;
-  latencyMs: Record<string, number>;
-};
-
 const DEFAULT_MIN_DELAY_MS = 30_000;
 const CHECK_TIMEOUT_MS = 5000;
 
@@ -104,6 +99,10 @@ export class HealthChecker {
 
           if (!ok) log.warn({ status: res.status }, "site down");
         } catch (err) {
+          if (err instanceof Error && err.name == "AbortError") {
+            return;
+          }
+
           const latency = Date.now() - start;
           this.#siteUp.labels(slug).set(0);
           this.#siteLatency.labels(slug).set(latency);

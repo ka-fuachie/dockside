@@ -62,8 +62,8 @@ export const SiteSchema = z.object({
   name: z.string(),
   currentVersion: z.number().nullable(),
   createdAt: z.string(),
-  up: z.boolean().nullable(),
-  checkedAt: z.string().nullable(),
+  up: z.boolean().nullable().optional(),
+  checkedAt: z.string().nullable().optional(),
 });
 
 export const DeploymentStatusSchema = z.enum(["running", "success", "failed"]);

@@ -7,12 +7,6 @@ import { DEPLOYMENT_CONFIG_FILE, parseDeploymentConfig } from "@dockside/deploym
 import { wait } from "./utils";
 import { Counter, Gauge, Registry } from "prom-client";
 
-type Metrics = {
-  success: number;
-  failure: number;
-  lastTick: number;
-};
-
 const DEFAULT_MIN_DELAY_MS = 10_000;
 const TAIL = 4096;
 

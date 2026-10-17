@@ -21,7 +21,7 @@ services:
     ports:
       - "${PROM_PORT}:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
     image: grafana/grafana
@@ -33,6 +33,15 @@ services:
       - "${GF_PORT}:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./data/sites:/srv/sites:ro
 
 volumes:
   postgres_data:

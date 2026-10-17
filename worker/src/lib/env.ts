@@ -7,9 +7,10 @@ dotenv.config({ path: fileURLToPath(new URL("../../../.env", import.meta.url)) }
 const EnvSchema = z.object({
   NODE_ENV: z.string().default("development"),
   AGENT_TOKEN: z.string(),
-  API_PORT: z.coerce.number(),
+  API_URL: z.url(),
   WORKER_PORT: z.coerce.number(),
   SITES_DIR: z.string(),
+  SITES_BASE_URL: z.url(),
   WORKER_LOG_LEVEL: z.string().optional(),
 });
 

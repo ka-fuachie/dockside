@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 const EnvSchema = z.object({
-  API_PORT: z.coerce.number(),
+  API_URL: z.url(),
   DOCKSIDE_PROFILE: z.string().optional(),
   DOCKSIDE_API: z.string().optional(),
 });
@@ -9,7 +9,7 @@ const EnvSchema = z.object({
 function parseEnv() {
   const result = EnvSchema.safeParse({
     ...process.env,
-    API_PORT: process.env.API_PORT,
+    API_URL: process.env.API_URL,
   });
 
   if (!result.success) {

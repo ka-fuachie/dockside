@@ -8,8 +8,7 @@ import { env } from "./env";
 const DEFAULT_PROFILE = "dev";
 export const getProfile = (value?: string) => value ?? env.DOCKSIDE_PROFILE ?? DEFAULT_PROFILE;
 
-export const DEFAULT_API_URL = `http://localhost:${env.API_PORT}`;
-// export const getBaseApiUrl = () => env.DOCKSIDE_API ?? DEFAULT_API_URL
+export const DEFAULT_API_URL = env.API_URL;
 export const getApiUrl = async (value?: string, readInput?: () => Promise<string>) =>
   value ??
   env.DOCKSIDE_API ??
