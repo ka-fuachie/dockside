@@ -27,10 +27,11 @@
     "vitest": "^5.0.4"
   },
   "dependencies": {
+    "@dockside/api-client": "workspace:*",
     "@solidjs/meta": "^1.0.0-next.2",
     "@solidjs/router": "^2.0.0-next.38",
     "@solidjs/web": "^2.0.0-rc.14",
     "solid-js": "^2.0.0-rc.14",
-    "@dockside/api-client": "workspace:*"
+    "zod": "^4.6.7"
   }
 }
