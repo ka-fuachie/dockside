@@ -2,9 +2,12 @@ import http from "node:http";
 import { Worker } from "./lib/worker";
 import { HealthChecker } from "./lib/health";
 import { Registry } from "prom-client";
+import { HttpLogger } from "pino-http";
 
-export function createServer(worker: Worker, healthChecker: HealthChecker) {
+export function createServer(worker: Worker, healthChecker: HealthChecker, httpLogger: HttpLogger) {
   return http.createServer(async (req, res) => {
+    httpLogger(req, res);
+
     if (req.url == "/healthz") {
       res.writeHead(200, { "content-type": "text/plain" }).end("ok");
       return;

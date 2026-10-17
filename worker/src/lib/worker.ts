@@ -20,7 +20,7 @@ export class Worker {
   #metrics: Registry;
   #deploySuccess: Counter;
   #deployFailure: Counter;
-  #lastTick: Gauge;
+  #lastTickDuration: Gauge;
 
   constructor(api: ApiClient, sitesDir: string, baseLogger: Logger, minDelayMs?: number) {
     this.#abortController = null;
@@ -40,9 +40,9 @@ export class Worker {
       help: "Failed deploys",
       registers: [this.#metrics],
     });
-    this.#lastTick = new Gauge({
-      name: "dockside_worker_last_tick_ms",
-      help: "Last tick epoch ms",
+    this.#lastTickDuration = new Gauge({
+      name: "dockside_worker_last_tick_duration_ms",
+      help: "Last tick diration ms",
       registers: [this.#metrics],
     });
   }
@@ -60,6 +60,7 @@ export class Worker {
 
   async #tick(signal: AbortSignal) {
     let isUnauthorized = false;
+    let start = performance.now();
     await Promise.allSettled([
       this.#run(signal)
         .catch((err) => {
@@ -67,7 +68,7 @@ export class Worker {
           isUnauthorized = err instanceof ApiError && err.status === 401;
         })
         .finally(() => {
-          this.#lastTick.set(Date.now());
+          this.#lastTickDuration.set(performance.now() - start);
         }),
       wait(this.#minDelayMs),
     ]);

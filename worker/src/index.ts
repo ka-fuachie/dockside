@@ -1,10 +1,10 @@
 import { healthChecker } from "./health";
 import { env } from "./lib/env";
-import { logger } from "./lib/logger";
+import { httpLogger, logger } from "./lib/logger";
 import { createServer } from "./server";
 import { worker } from "./worker";
 
-const server = createServer(worker, healthChecker);
+const server = createServer(worker, healthChecker, httpLogger);
 server.listen(env.WORKER_PORT, () => {
   logger.info(
     { port: env.WORKER_PORT, sites: env.SITES_DIR },

@@ -75,14 +75,14 @@ export class HealthChecker {
     await Promise.all(
       sites.map(async ({ id, slug }) => {
         const log = this.#baseLogger.child({ site: slug });
-        const start = Date.now();
+        const start = performance.now();
         try {
           const checkSignal = AbortSignal.any([signal, AbortSignal.timeout(CHECK_TIMEOUT_MS)]);
           const siteUrl = new URL(`sites/${slug}/`, this.#sitesBase);
           const res = await fetch(siteUrl, { signal: checkSignal });
           const body = await res.text();
           const ok = res.status === 200 && body.includes("<html");
-          const latency = Date.now() - start;
+          const latency = performance.now() - start;
 
           this.#siteUp.labels(slug).set(ok ? 1 : 0);
           this.#siteLatency.labels(slug).set(latency);
