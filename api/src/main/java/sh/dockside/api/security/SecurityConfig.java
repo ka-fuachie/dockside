@@ -47,7 +47,7 @@ public class SecurityConfig {
       .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .httpBasic(b -> b.disable())
       .authorizeHttpRequests(a -> a
-        .requestMatchers("/auth/*", "/actuator/health", "/error").permitAll()
+        .requestMatchers("/auth/*", "/actuator/health", "/actuator/prometheus", "/error").permitAll()
         .requestMatchers(HttpMethod.POST, "/sites").hasRole(Role.ADMIN.name())
         .requestMatchers(HttpMethod.POST, "/sites/*/deployments/**").hasAnyRole(
           Role.ADMIN.name(), Role.DEV.name()
