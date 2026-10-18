@@ -14,7 +14,13 @@ export default defineConfig(({ command, mode }) => {
     plugins: [
       // `extensions` makes @solidjs/vite-plugin also compile the `?pick=` route
       // modules the fileRoutes plugin emits (their ids end in a query string).
-      solid({ start: true, extensions: [".jsx", ".tsx"], diagnostics: true }), // add `ssr: true` for streaming SSR
+      solid({
+        start: { node: true, middleware: "./src/middleware.ts" },
+        ssr: true,
+        serverFunctions: true,
+        extensions: [".jsx", ".tsx"],
+        diagnostics: true,
+      }), // add `ssr: true` for streaming SSR
       fileRoutes({ types: true }),
       tailwindcss(),
     ],
@@ -24,10 +30,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: Number(env.WEB_PORT),
     },
-    define: {
-      "import.meta.env.API_URL": JSON.stringify(env.API_URL),
-      "import.meta.env.SITES_BASE_URL": JSON.stringify(env.SITES_BASE_URL),
-    },
+    envDir: "..",
     test: {
       environment: "jsdom",
       globals: false,

@@ -41,10 +41,28 @@ declare module "virtual:file-routes" {
       $$route: FileRouteEagerRef<typeof import("./src/routes/[...404]")>;
     },
     {
+      path: "/sites";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
+    },
+    {
+      path: "/sites/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
+      $$route?: undefined;
+    },
+    {
+      path: "/login";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/login")>;
+      $$route?: undefined;
+    },
+    {
       path: "/";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
-      $$route?: undefined;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
     }
   ];
   export default routes;
@@ -56,7 +74,7 @@ declare module "virtual:file-routes" {
       id: "/";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
-      $$route?: undefined;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
       children?: undefined;
     },
     {
@@ -66,6 +84,31 @@ declare module "virtual:file-routes" {
       $component: FileRouteLazyRef<typeof import("./src/routes/[...404]")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/[...404]")>;
       children?: undefined;
+    },
+    {
+      path: "/login";
+      id: "/login";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/login")>;
+      $$route?: undefined;
+      children?: undefined;
+    },
+    {
+      path: "/sites";
+      id: "/sites";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
+      children: readonly [
+        {
+          path: "/";
+          id: "/";
+          page: true;
+          $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
+          $$route?: undefined;
+          children?: undefined;
+        }
+      ];
     }
   ];
 }
