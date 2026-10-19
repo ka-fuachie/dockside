@@ -1,0 +1,21 @@
+FROM node:24-alpine AS build
+WORKDIR /workspace
+RUN corepack enable
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
+COPY packages/api-client/package.json packages/api-client/
+COPY web/package.json web/
+RUN pnpm install --frozen-lockfile
+COPY packages/api-client packages/api-client
+COPY web web
+RUN pnpm --filter @dockside/api-client build \
+ && pnpm --filter @dockside/web build
+RUN pnpm --filter @dockside/web deploy --prod /app
+
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000 HOST=0.0.0.0
+COPY --from=build --chown=node:node /app /app
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=15s --timeout=3s CMD wget -qO- "http://127.0.0.1:$PORT/" || exit 1
+CMD ["node", "dist/server/node.js"]

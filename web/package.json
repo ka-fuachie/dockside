@@ -20,7 +20,6 @@
     "@tailwindcss/vite": "^4.1.13",
     "@testing-library/jest-dom": "^7.0.0",
     "eslint-plugin-solid": "~0.18.1",
-    "filesystem-routing": "0.4.0",
     "jsdom": "^25.0.1",
     "tailwindcss": "^4.1.13",
     "vite": "^8.1.5",
@@ -28,6 +27,7 @@
   },
   "dependencies": {
     "@dockside/api-client": "workspace:*",
+    "filesystem-routing": "0.4.0",
     "@remix-run/cookie": "^1.0.0",
     "@solidjs/meta": "^1.0.0-next.2",
     "@solidjs/router": "^2.0.0-next.38",
