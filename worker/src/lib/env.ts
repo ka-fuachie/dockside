@@ -1,8 +1,4 @@
-import dotenv from "dotenv";
 import * as z from "zod";
-import { fileURLToPath } from "node:url";
-
-dotenv.config({ path: fileURLToPath(new URL("../../../.env", import.meta.url)) });
 
 const EnvSchema = z.object({
   NODE_ENV: z.string().default("development"),
@@ -15,7 +11,15 @@ const EnvSchema = z.object({
 });
 
 function parseEnv() {
-  const result = EnvSchema.safeParse(process.env);
+  const result = EnvSchema.safeParse({
+    API_URL: process.env.API_URL,
+    AGENT_TOKEN: process.env.AGENT_TOKEN,
+    WORKER_PORT: process.env.WORKER_PORT,
+    SITES_DIR: process.env.SITES_DIR,
+    SITES_BASE_URL: process.env.SITES_BASE_URL,
+    WORKER_LOG_LEVEL: process.env.WORKER_LOG_LEVEL,
+    ...process.env,
+  });
 
   if (!result.success) {
     console.error("Invalid environment variables:");

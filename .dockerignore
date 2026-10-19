@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+**/dist
+api/target
+data
+fixtures
+grafana
+nginx.conf
+prometheus.yml
+docker-compose.yml
+Dockerfile
+.dockerignore
+*.md

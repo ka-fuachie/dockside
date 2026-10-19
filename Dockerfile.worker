@@ -1,0 +1,24 @@
+FROM node:24-alpine AS build
+WORKDIR /workspace
+RUN corepack enable
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
+COPY packages/api-client/package.json packages/api-client/
+COPY packages/deployment-config/package.json packages/deployment-config/
+COPY worker/package.json worker/
+RUN pnpm install --frozen-lockfile
+COPY packages/api-client packages/api-client
+COPY packages/deployment-config packages/deployment-config
+COPY worker worker
+RUN pnpm --filter @dockside/deployment-config build \
+ && pnpm --filter @dockside/api-client build \
+ && pnpm --filter @dockside/worker build
+RUN pnpm --filter @dockside/worker deploy --prod /app
+
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build --chown=node:node /app /app
+USER node
+HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
+  CMD wget -qO- "http://127.0.0.1:$WORKER_PORT/healthz" || exit 1
+CMD ["node", "dist/index.mjs"]

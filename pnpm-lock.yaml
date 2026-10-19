@@ -299,9 +299,6 @@ importers:
       '@dockside/deployment-config':
         specifier: workspace:*
         version: link:../packages/deployment-config
-      dotenv:
-        specifier: ^18.0.7
-        version: 18.0.7
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
@@ -321,9 +318,15 @@ importers:
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
+      dotenv:
+        specifier: ^18.0.7
+        version: 18.0.7
       pino-pretty:
         specifier: ^13.2.0
         version: 13.2.0
+      tsdown:
+        specifier: ^0.23.1
+        version: 0.23.1(tsx@4.23.15)(typescript@7.0.2)
       tsx:
         specifier: ^4.23.15
         version: 4.23.15

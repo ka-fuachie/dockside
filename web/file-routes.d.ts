@@ -47,28 +47,28 @@ declare module "virtual:file-routes" {
       $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
     },
     {
-      path: "/sites";
-      page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
-    },
-    {
       path: "/login";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/login")>;
       $$route?: undefined;
     },
     {
-      path: "/sites/";
+      path: "/sites";
       page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
     },
     {
       path: "/sites/:slug";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/sites/[slug]")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/sites/[slug]")>;
+    },
+    {
+      path: "/sites/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
     }
   ];
   export default routes;
