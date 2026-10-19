@@ -1,0 +1,57 @@
+services:
+  prometheus:
+    volumes:
+      - ./prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+
+  nginx:
+    volumes:
+      - site-data:/srv/sites:ro
+
+  api:
+    build: { context: ./api }
+    restart: unless-stopped
+    environment:
+      API_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      API_JWT_SECRET: ${API_JWT_SECRET}
+      AGENT_TOKEN: ${AGENT_TOKEN}
+      UPLOAD_DIR: /srv/uploads
+    volumes:
+      - upload-data:/srv/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: { context: ., dockerfile: Dockerfile.web }
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      API_URL: http://api:8080
+      AGENT_TOKEN: ${AGENT_TOKEN}
+      WORKER_PORT: 3001
+      SITES_DIR: /srv/sites
+      SITES_BASE_URL: http://nginx
+    volumes:
+      - site-data:/srv/sites
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  site-data:
+  upload-data:

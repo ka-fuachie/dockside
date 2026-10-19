@@ -1,0 +1,39 @@
+upstream api_upstream { server ${NGINX_API_UPSTREAM}; }
+upstream web_upstream { server ${NGINX_WEB_UPSTREAM}; }
+
+server {
+  listen 80;
+  server_name dockside.localhost;
+  client_max_body_size 50m;
+  absolute_redirect off;
+
+  location /healthz {
+    default_type text/plain;
+    return 200 "ok";
+  }
+
+  location ~ ^/sites/(?<slug>[a-z0-9-]+)$ {
+    return 301 /sites/$slug/;
+  }
+  location ~ ^/sites/(?<slug>[a-z0-9-]+)/(?<rest>.*)$ {
+    alias /srv/sites/$slug/current/$rest;
+    index index.html;
+  }
+}
+
+server {
+  listen 80;
+  server_name app.dockside.localhost;
+  client_max_body_size 50m;
+
+  location /api/ {
+    proxy_pass http://api_upstream/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+  }
+  location / {
+    proxy_pass http://web_upstream;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+  }
+}
