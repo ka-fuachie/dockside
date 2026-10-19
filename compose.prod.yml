@@ -4,8 +4,12 @@ services:
       - ./prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
 
   nginx:
+    environment:
+      NGINX_API_UPSTREAM: "api:8080"
+      NGINX_WEB_UPSTREAM: "web:3000"
     volumes:
       - site-data:/srv/sites:ro
+    depends_on: [api, web]
 
   api:
     build: { context: ./api }
@@ -20,6 +24,10 @@ services:
       API_JWT_SECRET: ${API_JWT_SECRET}
       AGENT_TOKEN: ${AGENT_TOKEN}
       UPLOAD_DIR: /srv/uploads
+      PROD_ADMIN_USER: ${PROD_ADMIN_USER:-}
+      PROD_ADMIN_PASSWORD: ${PROD_ADMIN_PASSWORD:-}
+    ports:
+      - "${API_PORT}:8080"
     volumes:
       - upload-data:/srv/uploads
     depends_on:
@@ -32,6 +40,8 @@ services:
     environment:
       NODE_ENV: production
       API_URL: http://api:8080
+      SITES_BASE_URL: http://nginx
+      WEB_SESSION_SECRET: ${WEB_SESSION_SECRET}
     depends_on:
       api:
         condition: service_healthy

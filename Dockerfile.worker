@@ -18,6 +18,7 @@ FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build --chown=node:node /app /app
+RUN mkdir -p /srv/sites && chown -R node:node /srv/sites
 USER node
 HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:$WORKER_PORT/healthz" || exit 1

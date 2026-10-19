@@ -42,11 +42,12 @@ class UserSeeder {
     return args -> {
       if (prodAdminUser.isEmpty() || prodAdminPassword.isEmpty()) return;
       if (users.count() > 0) return;
-      users.save(new User() {{
-        setUsername(prodAdminUser);
-        setPasswordHash(passwords.encode(prodAdminPassword));
-        setRole(Role.ADMIN);
-      }});
+
+      User admin = new User();
+      admin.setUsername(prodAdminUser);
+      admin.setPasswordHash(passwords.encode(prodAdminPassword));
+      admin.setRole(Role.ADMIN);
+      users.save(admin);
     };
   }
 }
