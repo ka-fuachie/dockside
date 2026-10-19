@@ -1,3 +1,6 @@
+import { ApiError } from "@dockside/api-client";
+import { respond } from "@solidjs/web";
+
 export function formatError(code: string, message: string, fields?: Record<string, string> | null) {
   return {
     code,
@@ -19,4 +22,14 @@ export function isServerError(err: unknown): err is ServerError {
     "fields" in err &&
     typeof err.fields === "object"
   );
+}
+
+export function handleApiError(err: unknown): never {
+  if (err instanceof ApiError) {
+    throw respond(formatError(err.code, err.message, err.fields), {
+      status: err.status,
+    });
+  }
+
+  throw err;
 }

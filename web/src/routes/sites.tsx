@@ -5,10 +5,24 @@ import { defineFileRoute } from "@solidjs/router/fs"
 
 export const route = defineFileRoute("/sites", {
   preload({ location }) {
-    return requireUser(location.pathname + location.search)
+    requireUser(location.pathname + location.search)
   },
 })
+
 export default function SitesLayout(props: RouteProps<typeof route>) {
   const user = createMemo(() => requireUser(props.location.pathname + props.location.search))
-  return <Show when={user()}>{props.children}</Show>
+  return (
+    <Show when={user()}>
+      <header>
+        <p>Dockside</p>
+        <div>
+          <p>{user().username}</p>
+          <p>{user().role}</p>
+        </div>
+      </header>
+      <main>
+        {props.children}
+      </main>
+    </Show>
+  )
 }

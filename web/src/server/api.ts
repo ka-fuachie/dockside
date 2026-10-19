@@ -1,24 +1,24 @@
 import "server-only";
 import { createClient } from "@dockside/api-client";
 import { env } from "virtual:env/server";
-import { SessionStore } from "../lib/server/session-store";
+import { SessionRecord, SessionStore } from "../lib/server/session-store";
 
 export function createUnauthedClient() {
   return createClient(env.API_URL);
 }
 
-export function createAuthedClient(sessionId: string, sessionStore: SessionStore) {
+export function createAuthedClient(session: SessionRecord, sessionStore: SessionStore) {
   return createClient(
     env.API_URL,
-    {},
+    { accessToken: session.accessToken, refreshToken: session.refreshToken },
     {
       onStateChange(state) {
         if (state.accessToken == null || state.refreshToken == null) {
-          sessionStore.destroy(sessionId);
+          sessionStore.destroy(session.id);
           return;
         }
 
-        sessionStore.setAccessToken(sessionId, state.accessToken);
+        sessionStore.setAccessToken(session.id, state.accessToken);
       },
     },
   );

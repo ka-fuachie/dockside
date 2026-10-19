@@ -4,7 +4,7 @@ import { event, validate } from "../lib/server/utils";
 import { setSessionId } from "../server/session";
 import { redirect, respond } from "@solidjs/web";
 import { ApiError } from "@dockside/api-client";
-import { formatError } from "../lib/server/error";
+import { formatError, handleApiError } from "../lib/server/error";
 
 export function safeNext(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -27,16 +27,7 @@ export async function login(form: FormData) {
   validate(LoginPayloadSchema, payload);
 
   const { api, sessionStore } = event().locals;
-  const res = await api.auth.login(payload).catch((err) => {
-    if (err instanceof ApiError) {
-      console.error(err);
-      throw respond(formatError(err.code, err.message, err.fields), {
-        status: err.status,
-      });
-    }
-
-    throw err;
-  });
+  const res = await api.auth.login(payload).catch(handleApiError);
   const session = sessionStore.create(res.accessToken, res.refreshToken);
   await setSessionId(event(), session.id);
 

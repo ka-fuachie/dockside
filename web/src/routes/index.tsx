@@ -3,7 +3,7 @@ import { redirect } from "@solidjs/web"
 
 export const route = defineFileRoute("/", {
   preload() {
-    return redirect("/sites")
+    throw redirect("/sites")
   }
 })
 

@@ -14,6 +14,7 @@ export const getCurrentUser = query(async () => {
 
 export const requireUser = query(async (next: string) => {
   "use server";
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (user == null) throw redirect(paths.login({ next }));
+  return user;
 }, QueryKeys.REQUIRE_USER);

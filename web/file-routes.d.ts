@@ -41,16 +41,16 @@ declare module "virtual:file-routes" {
       $$route: FileRouteEagerRef<typeof import("./src/routes/[...404]")>;
     },
     {
+      path: "/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
+    },
+    {
       path: "/sites";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
-    },
-    {
-      path: "/sites/";
-      page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
-      $$route?: undefined;
     },
     {
       path: "/login";
@@ -59,10 +59,16 @@ declare module "virtual:file-routes" {
       $$route?: undefined;
     },
     {
-      path: "/";
+      path: "/sites/";
       page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
+    },
+    {
+      path: "/sites/:slug";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/sites/[slug]")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/[slug]")>;
     }
   ];
   export default routes;
@@ -105,7 +111,15 @@ declare module "virtual:file-routes" {
           id: "/";
           page: true;
           $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
-          $$route?: undefined;
+          $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
+          children?: undefined;
+        },
+        {
+          path: "/:slug";
+          id: "/:slug";
+          page: true;
+          $component: FileRouteLazyRef<typeof import("./src/routes/sites/[slug]")>;
+          $$route: FileRouteEagerRef<typeof import("./src/routes/sites/[slug]")>;
           children?: undefined;
         }
       ];

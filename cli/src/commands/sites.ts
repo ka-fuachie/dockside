@@ -33,7 +33,6 @@ sites.command("list").action(async () => {
       ),
     );
   } catch (err: any) {
-    console.error(err);
     fail(!!opts.json, err.code ?? "REQUEST_FAILED", err.message);
   }
 });

@@ -1,12 +1,13 @@
 import { Title } from "@solidjs/meta"
-import { action, useSubmissions } from "@solidjs/router"
-import { login } from "../data/auth"
+import { action, useSearchParams, useSubmissions } from "@solidjs/router"
+import { login, safeNext } from "../data/auth"
 import { Show } from "solid-js"
 import { isServerError } from "../lib/server/error"
 
 const loginAction = action(login)
 
 export default function Login() {
+  const [search] = useSearchParams()
   const submissions = useSubmissions(loginAction)
   const issues = () => {
     const error = submissions.at(-1)?.error
@@ -18,12 +19,14 @@ export default function Login() {
 
   return (
     <main>
-      <Title>Dockside - Login</Title>
+      <Title>Login - Dockside</Title>
       <h1>Log in</h1>
 
       <form method="post" action={loginAction}>
         <div class="grid">
           <div>
+            <input type="hidden" name="next" value={safeNext(search.next) ?? "/"} />
+
             <label for="username">Username</label>
             <input id="username" name="username" type="text" required aria-invalid={issues().username ? "true" : undefined} />
             <Show when={issues().username}>{(message) => <p role="alert">{message()}</p>}</Show>

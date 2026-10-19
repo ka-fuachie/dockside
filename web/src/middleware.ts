@@ -27,7 +27,7 @@ const attachSessionAndApi: StartMiddleware = async (event, next) => {
 
   if (session != null) {
     event.locals.session = session;
-    event.locals.api = createAuthedClient(session.id, sessionStore);
+    event.locals.api = createAuthedClient(session, sessionStore);
   } else {
     event.locals.api = createUnauthedClient();
   }
