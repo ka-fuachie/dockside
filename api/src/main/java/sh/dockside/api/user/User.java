@@ -23,6 +23,11 @@ public class User {
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @PrePersist
+  void prePersist() {
+    if(createdAt == null) createdAt = Instant.now();
+  }
+
   public Long getId() { return id; }
   public String getUsername() { return username; }
   public String getPasswordHash() { return passwordHash; }
