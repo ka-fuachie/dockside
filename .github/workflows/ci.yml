@@ -33,9 +33,15 @@ jobs:
     name: Test java api
     runs-on: ubuntu-24.04
     steps:
-      - name: Setup Java 25 (Temurin)
-        uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: "25", cache: maven }
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v5          # v4 is deprecated — bump while you're in there
+        with:
+          java-version: '25'
+          distribution: temurin
+          cache: maven                        # now finds api/pom.xml
 
       - name: Run api tests
         run: ./mvnw test
