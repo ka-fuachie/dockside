@@ -1,10 +1,11 @@
 import { Command } from "@commander-js/extra-typings";
 import { ask, fail, print } from "../lib/io";
 import { program } from "../program";
-import { DEFAULT_API_URL, getApiUrl, getProfile, saveSession } from "../lib/config";
+import { DEFAULT_API_URL, getApiUrl, getProfile, loadSession, saveSession } from "../lib/config";
 import { createClient } from "@dockside/api-client";
+import { createAuthedClient } from "../api";
 
-export const auth = new Command()
+export const login = new Command()
   .name("login")
   .option("--username <u>")
   .option("--password <p>")
@@ -24,3 +25,29 @@ export const auth = new Command()
       fail(!!opts.json, err?.code ?? "LOGIN_FAILED", err.message);
     }
   });
+
+export const logout = new Command().name("logout").action(async () => {
+  const opts = program.opts();
+  const profile = getProfile(opts.profile);
+  try {
+    const api = await createAuthedClient(profile);
+    const session = await loadSession(profile);
+    if (session == null) {
+      print(
+        !!opts.json,
+        { ok: true, alreadyLoggedOut: true },
+        () => `not logged in — nothing to do`,
+      );
+      return;
+    }
+
+    api.auth.logout({ refreshToken: session!.refreshToken });
+    print(
+      !!opts.json,
+      { ok: true, baseUrl: session!.baseUrl },
+      () => `logged out of ${session!.baseUrl}`,
+    );
+  } catch (err: any) {
+    fail(!!opts.json, err?.code ?? "LOGOUT_FAILED", err.message);
+  }
+});

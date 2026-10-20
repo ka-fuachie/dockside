@@ -2,6 +2,7 @@ package sh.dockside.api.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -39,6 +40,7 @@ public class JwtService {
   private String build(String username, Role role, long ttl) {
     var b = Jwts.builder()
       .subject(username)
+      .id(UUID.randomUUID().toString())
       .issuedAt(new Date())
       .expiration(new Date(System.currentTimeMillis() + ttl));
     if (role != null) b.claim("role", role.name());

@@ -66,7 +66,7 @@ describe("auth", () => {
   it("emits a snapshot that cannot tamper with internals", async () => {
     responder = (calls) => (calls.length === 1 ? json(tokens) : json(site));
     stubFetch();
-    let snap: Record<string, string | undefined> = {};
+    let snap: Record<string, string | null | undefined> = {};
     const client = createClient("http://api", {}, { onStateChange: (s) => (snap = { ...s }) });
     await client.auth.login({ username: "u", password: "p" });
     snap.accessToken = "forged";

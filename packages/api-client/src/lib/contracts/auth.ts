@@ -32,4 +32,11 @@ export const auth = {
       },
     }),
   ),
+  logout: entry(RefreshRequestSchema, z.null(), (payload, ctx) =>
+    ctx.post("auth/logout", {
+      body: {
+        refreshToken: payload.refreshToken,
+      },
+    }),
+  ),
 } as const;

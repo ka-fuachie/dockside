@@ -4,7 +4,8 @@ import { program } from "./program";
 import { commands } from "./commands";
 
 program
-  .addCommand(commands.auth)
+  .addCommand(commands.login)
+  .addCommand(commands.logout)
   .addCommand(commands.sites)
   .addCommand(commands.deployments)
   .addCommand(commands.rollback)

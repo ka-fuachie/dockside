@@ -8,9 +8,9 @@ import { makeRequest } from "./request";
 import { ApiError, ErrorResponseSchema } from "./error";
 
 export type ApiClientState = {
-  accessToken?: string;
-  refreshToken?: string;
-  agentToken?: string;
+  accessToken?: string | null;
+  refreshToken?: string | null;
+  agentToken?: string | null;
 };
 
 export type ApiClientCallbacks = {
@@ -62,6 +62,14 @@ function buildMethod<T extends ContractEntry<z.ZodType, z.ZodType>>(
       if (authResult.success) {
         state.accessToken = authResult.data.accessToken;
         state.refreshToken = authResult.data.refreshToken;
+        if (stateChangeCallback != null) {
+          stateChangeCallback({ ...state });
+        }
+      }
+      // Check for logout
+      if (entry.handler === auth.logout.handler) {
+        state.accessToken = null;
+        state.refreshToken = null;
         if (stateChangeCallback != null) {
           stateChangeCallback({ ...state });
         }
