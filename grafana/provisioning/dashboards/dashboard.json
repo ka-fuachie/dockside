@@ -5,8 +5,8 @@
     "name": "adbfwzk",
     "namespace": "default",
     "uid": "8a09baf2-f3bc-4972-9dde-2e1a4b3a4d67",
-    "resourceVersion": "1792449504497002",
-    "generation": 1,
+    "resourceVersion": "1792451257856994",
+    "generation": 2,
     "creationTimestamp": "2026-10-19T21:02:24Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "100051772796928"
@@ -15,9 +15,11 @@
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "dockside",
-      "grafana.app/sourceChecksum": "812fb79e3f1d3054cb6ecc199a2529de",
+      "grafana.app/sourceChecksum": "add08895c6274d207a2bc6e1249801d7",
       "grafana.app/sourcePath": "/etc/grafana/provisioning/dashboards/dashboard.json",
-      "grafana.app/sourceTimestamp": "1792449481000",
+      "grafana.app/sourceTimestamp": "1792451246000",
+      "grafana.app/updatedBy": "access-policy:service",
+      "grafana.app/updatedTimestamp": "2026-10-19T23:07:37Z",
       "grafana.app/folder": ""
     }
   },
@@ -268,8 +270,7 @@
                     "hidden": false,
                     "query": {
                       "datasource": {
-                        "name": "prometheus",
-                        "uid": "prometheus"
+                        "name": "prometheus"
                       },
                       "group": "prometheus",
                       "kind": "DataQuery",
@@ -291,8 +292,7 @@
                     "hidden": false,
                     "query": {
                       "datasource": {
-                        "name": "prometheus",
-                        "uid": "prometheus"
+                        "name": "prometheus"
                       },
                       "group": "prometheus",
                       "kind": "DataQuery",
@@ -734,7 +734,8 @@
                     "hidden": false,
                     "query": {
                       "datasource": {
-                        "name": "prometheus"
+                        "name": "prometheus",
+                        "uid": "prometheus"
                       },
                       "group": "prometheus",
                       "kind": "DataQuery",
@@ -809,8 +810,12 @@
                         "value": 0
                       },
                       {
+                        "color": "yellow",
+                        "value": 0.01
+                      },
+                      {
                         "color": "red",
-                        "value": 80
+                        "value": 0.1
                       }
                     ]
                   },
