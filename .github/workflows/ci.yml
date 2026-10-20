@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run JS packages tests
+        run: pnpm -r test
+
+      - name: Setup Java 25 (Temurin)
+        uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "25", cache: maven }
+
+      - name: Run api tests
+        run: ./mvnw test
+        working-directory: api
