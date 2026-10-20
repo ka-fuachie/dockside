@@ -48,11 +48,10 @@ export class SessionStore {
     return parsed.data;
   }
 
-  async setAccessToken(id: string, accessToken: string) {
+  async setTokens(id: string, accessToken: string, refreshToken: string) {
     const client = await redis();
     if (await client.exists(key(id))) {
-      // guard: hSet would create a TTL-less orphan
-      await client.hSet(key(id), { accessToken });
+      await client.hSet(key(id), { accessToken, refreshToken });
     }
   }
 

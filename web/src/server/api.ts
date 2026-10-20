@@ -14,11 +14,13 @@ export function createAuthedClient(session: SessionRecord, sessionStore: Session
     {
       onStateChange(state) {
         if (state.accessToken == null || state.refreshToken == null) {
-          sessionStore.destroy(session.id);
+          sessionStore.destroy(session.id).catch(console.error);
           return;
         }
 
-        sessionStore.setAccessToken(session.id, state.accessToken);
+        sessionStore
+          .setTokens(session.id, state.accessToken, state.refreshToken)
+          .catch(console.error);
       },
     },
   );
