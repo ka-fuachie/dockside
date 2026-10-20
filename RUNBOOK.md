@@ -46,6 +46,14 @@ dockside deploy --site <slug> <files-or-zip>
 
 ## 3. Deploy (the stack itself)
 
+First pull on a fresh host (private GHCR packages — once per host):
+
+```bash
+docker login ghcr.io -u ka-fuachie
+# password = classic PAT, scope read:packages  (github.com/settings/tokens)
+# compose picks up the stored credential automatically; no auth config in the compose files
+```
+
 ```bash
 git pull
 docker compose -f docker-compose.yml -f compose.prod.yml pull    # images from GHCR once CI lands
@@ -87,6 +95,8 @@ docker compose -f docker-compose.yml -f compose.prod.yml up -d --force-recreate 
 
 Note: rotating `API_JWT_SECRET` logs out every user (tokens invalid) — expected.
 Rotating `AGENT_TOKEN` breaks the worker until they get the new token from `.env`.
+Rotating a *node's* GHCR PAT: fresh `docker login ghcr.io -u ka-fuachie` after issuing a new
+classic PAT with `read:packages` (pulls 401 when it expires — that's the tell).
 
 ## 7. Backups
 
