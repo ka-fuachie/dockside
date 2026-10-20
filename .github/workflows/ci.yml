@@ -6,7 +6,8 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-js:
+    name: Test js packages
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -28,6 +29,10 @@ jobs:
       - name: Run JS packages tests
         run: pnpm -r test
 
+  test-api:
+    name: Test java api
+    runs-on: ubuntu-24.04
+    steps:
       - name: Setup Java 25 (Temurin)
         uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "25", cache: maven }
