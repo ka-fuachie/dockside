@@ -8,14 +8,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 class UserSeeder {
-
   @Bean
   CommandLineRunner seedDemoUsers(
       UserRepository users,
       PasswordEncoder passwords,
-      @Value("${seeder.seed-demo-users:false}") boolean seedDemoUsers) {
+      @Value("${seeder.seed-demo-users:false}") boolean shouldSeedDemoUsers) {
     return args -> {
-      if (!seedDemoUsers) return;
+      if (!shouldSeedDemoUsers) return;
       if (users.findByUsername("admin").isPresent()) return;
 
       User admin = new User();
@@ -38,8 +37,10 @@ class UserSeeder {
       UserRepository users,
       PasswordEncoder passwords,
       @Value("${seeder.prod-admin-user:}") String prodAdminUser,
-      @Value("${seeder.prod-admin-password:}") String prodAdminPassword) {
+      @Value("${seeder.prod-admin-password:}") String prodAdminPassword,
+      @Value("${seeder.seed-demo-users:false}") boolean shouldSeedDemoUsers) {
     return args -> {
+      if(shouldSeedDemoUsers) return;
       if (prodAdminUser.isEmpty() || prodAdminPassword.isEmpty()) return;
       if (users.count() > 0) return;
 
