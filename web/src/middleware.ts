@@ -22,7 +22,7 @@ const attachSessionAndApi: StartMiddleware = async (event, next) => {
   let session: SessionRecord | null = null;
 
   if (sessionId != null) {
-    session = sessionStore.get(sessionId);
+    session = await sessionStore.get(sessionId);
   }
 
   if (session != null) {

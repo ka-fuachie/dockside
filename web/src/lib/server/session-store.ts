@@ -1,44 +1,63 @@
 import "server-only";
+import "zod/compile";
+import * as z from "zod";
 import { randomUUID } from "node:crypto";
+import { redis } from "../../server/redis";
 
-export interface SessionRecord {
-  id: string;
-  accessToken: string;
-  refreshToken: string;
-  createdAt: number;
-}
+const SessionRecordSchema = z.object({
+  id: z.string(),
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  createdAt: z.number(),
+});
 
-const TTL = 1000 * 60 * 60 * 24 * 30;
+const PersistedSessionRecordSchema = SessionRecordSchema.extend({
+  createdAt: z.coerce.number(),
+});
+
+export type SessionRecord = z.infer<typeof SessionRecordSchema>;
+
+const TTL_SECS = 60 * 60 * 24 * 30;
+const KEY_BASE = "session";
+const key = (id: string) => `${KEY_BASE}:${id}`;
 
 export class SessionStore {
-  #records: Map<string, SessionRecord>;
-
-  constructor() {
-    this.#records = new Map();
-  }
-
-  create(accessToken: string, refreshToken: string) {
+  async create(accessToken: string, refreshToken: string) {
     const record = { id: randomUUID(), accessToken, refreshToken, createdAt: Date.now() };
-    this.#records.set(record.id, record);
+    const client = await redis();
+    await client
+      .multi()
+      .hSet(key(record.id), {
+        id: record.id,
+        accessToken: record.accessToken,
+        refreshToken: record.refreshToken,
+        createdAt: String(record.createdAt),
+      })
+      .expire(key(record.id), TTL_SECS)
+      .exec();
+
     return record;
   }
 
-  get(id: string) {
-    const row = this.#records.get(id);
-    if (!row) return null;
-    if (Date.now() - row.createdAt > TTL) {
-      this.#records.delete(id);
-      return null;
+  async get(id: string) {
+    const client = await redis();
+    const row = await client.hGetAll(key(id));
+    const parsed = PersistedSessionRecordSchema.safeParse(row);
+    if (!parsed.success) return null;
+
+    return parsed.data;
+  }
+
+  async setAccessToken(id: string, accessToken: string) {
+    const client = await redis();
+    if (await client.exists(key(id))) {
+      // guard: hSet would create a TTL-less orphan
+      await client.hSet(key(id), { accessToken });
     }
-    return row;
   }
 
-  setAccessToken(id: string, accessToken: string) {
-    const row = this.#records.get(id);
-    if (row) this.#records.set(id, { ...row, accessToken });
-  }
-
-  destroy(id: string) {
-    this.#records.delete(id);
+  async destroy(id: string) {
+    const client = await redis();
+    await client.del(key(id));
   }
 }

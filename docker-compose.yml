@@ -40,6 +40,21 @@ services:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
 
+  redis:
+    image: redis:8.10-alpine
+    container_name: redis_local
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
@@ -55,3 +70,4 @@ services:
 volumes:
   postgres_data:
   grafana-data:
+  redis-data:

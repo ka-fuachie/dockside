@@ -44,8 +44,12 @@ services:
       API_URL: http://api:8080
       SITES_BASE_URL: http://nginx
       WEB_SESSION_SECRET: ${WEB_SESSION_SECRET}
+      REDIS_HOST: redis_local
+      REDIS_PORT: ${REDIS_PORT}
     depends_on:
       api:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   worker:

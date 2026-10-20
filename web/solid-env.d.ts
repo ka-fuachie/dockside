@@ -22,6 +22,9 @@ declare module 'virtual:env/server' {
     readonly "API_URL": __Out<__Schema["server"]["API_URL"]>;
     readonly "SITES_BASE_URL": __Out<__Schema["server"]["SITES_BASE_URL"]>;
     readonly "WEB_SESSION_SECRET": __Out<__Schema["server"]["WEB_SESSION_SECRET"]>;
+    readonly "REDIS_HOST": __Out<__Schema["server"]["REDIS_HOST"]>;
+    readonly "REDIS_PORT": __Out<__Schema["server"]["REDIS_PORT"]>;
+    readonly "REDIS_PASSWORD": __Out<__Schema["server"]["REDIS_PASSWORD"]>;
   };
   export { env };
   export default env;
