@@ -145,6 +145,24 @@ describe("auto refresh", () => {
     await expect(client.agent.nextJob()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     expect(seen).toHaveLength(1);
   });
+
+  it("refreshes once even when many requests 401 simultaneously", async () => {
+    responder = (calls) => {
+      const call = calls[calls.length - 1];
+      if (call.url.endsWith("/auth/refresh"))
+        return json({ accessToken: "a2", refreshToken: "r2" });
+      return error("UNAUTHORIZED", 401);
+    };
+    stubFetch();
+    const client = createClient("http://api", { refreshToken: "old-r" });
+    const results = await Promise.allSettled([
+      client.sites.one({ id: 1 }),
+      client.sites.one({ id: 2 }),
+      client.sites.one({ id: 3 }),
+    ]);
+    expect(seen.filter((c) => c.url.endsWith("/auth/refresh"))).toHaveLength(1);
+    expect(results.every((r) => r.status === "rejected")).toBe(true);
+  });
 });
 
 describe("transport", () => {

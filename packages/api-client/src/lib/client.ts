@@ -18,6 +18,10 @@ export type ApiClientCallbacks = {
   onStateChange?: (state: ApiClientState) => void;
 };
 
+type RefreshingState = {
+  promise: Promise<any> | null;
+};
+
 function buildMethod<T extends ContractEntry<z.ZodType, z.ZodType>>(
   baseUrl: string,
   state: ApiClientState,
@@ -85,11 +89,32 @@ function buildMethod<T extends ContractEntry<z.ZodType, z.ZodType>>(
   };
 }
 
+async function refresh(params: {
+  refreshing: RefreshingState;
+  baseUrl: string;
+  state: ApiClientState;
+  callbacks: ApiClientCallbacks | null;
+  options?: { signal?: AbortSignal };
+}) {
+  const { refreshing, baseUrl, state, callbacks, options } = params;
+  if (refreshing.promise != null) return refreshing.promise;
+
+  const refreshFromApi = buildMethod(baseUrl, state, auth.refresh, callbacks);
+  const refreshingPromise = refreshFromApi({ refreshToken: state.refreshToken! }, options);
+  try {
+    refreshing.promise = refreshingPromise;
+    await refreshingPromise;
+  } finally {
+    refreshing.promise = null;
+  }
+}
+
 function withAutoRefresh<T extends ContractEntry<z.ZodType, z.ZodType>>(
   method: ReturnType<typeof buildMethod<T>>,
   baseUrl: string,
   state: ApiClientState,
   callbacks: ApiClientCallbacks | null,
+  refreshing: RefreshingState,
 ) {
   const quiet = callbacks == null ? null : { ...callbacks, onError: undefined };
   const errorCallback = callbacks?.onError;
@@ -97,35 +122,52 @@ function withAutoRefresh<T extends ContractEntry<z.ZodType, z.ZodType>>(
     try {
       return await method(...args);
     } catch (err) {
+      let finalErr = err;
       if (
         err instanceof ApiError &&
         err.status === 401 &&
         err.code === "UNAUTHORIZED" &&
         state.refreshToken != null
       ) {
-        const refresh = buildMethod(baseUrl, state, auth.refresh, quiet);
         try {
           const options = args[1];
-          await refresh({ refreshToken: state.refreshToken }, options);
-          return await method(...args);
+          await refresh({
+            refreshing,
+            baseUrl,
+            state,
+            callbacks: quiet,
+            options,
+          });
+
+          return await method(...args).catch((err) => {
+            finalErr = err;
+            throw err;
+          });
         } catch {}
       }
 
       if (errorCallback != null) {
-        errorCallback(err);
+        errorCallback(finalErr);
       }
 
-      throw err;
+      throw finalErr;
     }
   };
 }
 
 function buildMethodWithRefresh<T extends ContractEntry<z.ZodType, z.ZodType>>(
+  refreshing: RefreshingState,
   ...args: Parameters<typeof buildMethod<T>>
 ) {
   const [baseUrl, state, entry, callbacks] = args;
   const quiet = callbacks == null ? null : { ...callbacks, onError: undefined };
-  return withAutoRefresh(buildMethod(baseUrl, state, entry, quiet), baseUrl, state, callbacks);
+  return withAutoRefresh(
+    buildMethod(baseUrl, state, entry, quiet),
+    baseUrl,
+    state,
+    callbacks,
+    refreshing,
+  );
 }
 
 export function createClient(
@@ -134,6 +176,7 @@ export function createClient(
   callbacks?: ApiClientCallbacks,
 ) {
   const state = { ...defaultState };
+  const refreshing: RefreshingState = { promise: null };
 
   function buildDomain<T extends { [K: string]: ContractEntry<any, any> }>(contract: T) {
     return Object.fromEntries(
@@ -141,7 +184,7 @@ export function createClient(
         if (entry == auth.refresh) {
           return [key, buildMethod(baseUrl, state, entry, callbacks ?? null)];
         }
-        return [key, buildMethodWithRefresh(baseUrl, state, entry, callbacks ?? null)];
+        return [key, buildMethodWithRefresh(refreshing, baseUrl, state, entry, callbacks ?? null)];
       }),
     ) as { [K in keyof T]: ReturnType<typeof buildMethod<T[K]>> };
   }
