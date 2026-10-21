@@ -8,7 +8,8 @@ public record DeploymentResponse(
   String siteSlug,
   Integer version,
   DeploymentStatus status,
-  Instant createdAt
+  Instant createdAt,
+  String createdByUsername
 ) {
   public static DeploymentResponse from(Deployment d) {
     return new DeploymentResponse(
@@ -17,7 +18,8 @@ public record DeploymentResponse(
       d.getSite().getSlug(),
       d.getVersion(),
       d.getStatus(),
-      d.getCreatedAt()
+      d.getCreatedAt(),
+      d.getCreatedBy() != null ? d.getCreatedBy().getUsername(): null
     );
   }
 }

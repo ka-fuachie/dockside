@@ -7,6 +7,7 @@ import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.*;
 import sh.dockside.api.site.Site;
+import sh.dockside.api.user.User;
 
 @Entity
 @Table(name = "deployments",
@@ -19,6 +20,10 @@ public class Deployment {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "site_id", nullable = false)
   private Site site;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "created_by")
+  private User createdBy;
 
   @Column(nullable = false)
   private Integer version;
@@ -44,6 +49,7 @@ public class Deployment {
 
   public Long getId() { return id; }
   public Site getSite() { return site; }
+  public User  getCreatedBy() { return createdBy; }
   public Integer getVersion() { return version; }
   public DeploymentStatus getStatus() { return status; }
   public String getArtifactPath() { return artifactPath; }
@@ -51,6 +57,7 @@ public class Deployment {
   public Instant getCreatedAt() { return createdAt; }
 
   public void setSite(Site site) { this.site = site; }
+  public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
   public void setVersion(Integer version) { this.version = version; }
   public void setStatus(DeploymentStatus status) { this.status = status; }
   public void setArtifactPath(String artifactPath) { this.artifactPath = artifactPath; }

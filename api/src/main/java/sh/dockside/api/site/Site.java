@@ -1,6 +1,8 @@
 package sh.dockside.api.site;
 
 import jakarta.persistence.*;
+import sh.dockside.api.user.User;
+
 import java.time.Instant;
 
 @Entity
@@ -16,6 +18,10 @@ public class Site {
   @Column(nullable = false)
   private String name;
 
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "created_by")
+  private User createdBy;
+
   @Column(name = "current_version")
   private Integer currentVersion;
 
@@ -30,10 +36,12 @@ public class Site {
   public Long getId() { return id; }
   public String getSlug() { return slug; }
   public String getName() { return name; }
+  public User getCreatedBy() { return createdBy; }
   public Integer getCurrentVersion() { return currentVersion; }
   public Instant getCreatedAt() { return createdAt; }
 
   public void setSlug(String slug) { this.slug = slug; }
   public void setName(String name) { this.name = name; }
+  public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
   public void setCurrentVersion(Integer currentVersion) { this.currentVersion = currentVersion; }
 }

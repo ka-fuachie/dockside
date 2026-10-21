@@ -3,6 +3,7 @@ package sh.dockside.api.site;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import sh.dockside.api.health.HealthCheckRepository;
+import sh.dockside.api.user.User;
+import sh.dockside.api.user.UserRepository;
 
 @RestController
 @RequestMapping("/sites")
@@ -22,15 +25,23 @@ import sh.dockside.api.health.HealthCheckRepository;
 public class SiteController {
   private final SiteRepository sites;
   private final HealthCheckRepository health;
+  private final UserRepository users;
 
-  public SiteController(SiteRepository sites, HealthCheckRepository health) {
+  public SiteController(SiteRepository sites, HealthCheckRepository health, UserRepository users) {
     this.sites = sites;
     this.health = health;
+    this.users = users;
   }
 
   private SiteResponse withHealth(Site site) {
     var healthCheck = health.findTopBySiteIdOrderByCheckedAtDesc(site.getId()).orElse(null);
     return SiteResponse.from(site, healthCheck);
+  }
+
+  private User currentUser() {
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    return users.findByUsername(auth.getName())
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
   }
 
   @GetMapping
@@ -47,6 +58,7 @@ public class SiteController {
     var site = new Site();
     site.setSlug(body.slug());
     site.setName(body.name());
+    site.setCreatedBy(currentUser());
     return SiteResponse.from(sites.save(site));
   }
 

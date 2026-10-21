@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import sh.dockside.api.site.SiteRepository;
+import sh.dockside.api.user.User;
+import sh.dockside.api.user.UserRepository;
 
 @RestController
 @RequestMapping("/sites/{siteId}/deployments")
@@ -34,17 +37,27 @@ public class DeploymentController {
 
   private final SiteRepository sites;
   private final DeploymentRepository deployments;
+  private final UserRepository users;
   private final Path uploadDir;
 
   public DeploymentController(
     SiteRepository sites,
     DeploymentRepository deploments,
+    UserRepository users,
     @Value("${app.upload-dir}") String uploadDir
   ) throws IOException {
     this.sites = sites;
     this.deployments = deploments;
+    this.users = users;
     this.uploadDir = Paths.get(uploadDir);
     Files.createDirectories(this.uploadDir);
+  }
+
+
+  private User currentUser() {
+    var auth = SecurityContextHolder.getContext().getAuthentication();
+    return users.findByUsername(auth.getName())
+      .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
   }
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -97,6 +110,7 @@ public class DeploymentController {
     d.setStatus(DeploymentStatus.running);
     d.setArtifactPath(destination.toString());
     d.setConfigJson("{}");
+    d.setCreatedBy(currentUser());
 
     return DeploymentResponse.from(deployments.save(d));
   }

@@ -11,7 +11,8 @@ public record SiteResponse(
   Integer currentVersion,
   Instant createdAt,
   Boolean up,
-  Instant checkedAt
+  Instant checkedAt,
+  String createdByUsername
 ) {
   public static SiteResponse from(Site s) {
     return from(s, null);
@@ -25,7 +26,8 @@ public record SiteResponse(
       s.getCurrentVersion(),
       s.getCreatedAt(),
       h == null ? null : h.getUp(),
-      h == null ? null : h.getCheckedAt()
+      h == null ? null : h.getCheckedAt(),
+      s.getCreatedBy() != null ? s.getCreatedBy().getUsername(): null
     );
   }
 }
