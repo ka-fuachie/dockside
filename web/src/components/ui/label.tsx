@@ -1,0 +1,21 @@
+"use client"
+
+import { ComponentProps } from "@solidjs/web"
+import { cn } from "cn"
+import { omit } from "solid-js"
+
+function Label(props: ComponentProps<"label">) {
+  const otherProps = omit(props, "class")
+  return (
+    <label
+      data-slot="label"
+      class={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        props.class
+      )}
+      {...otherProps}
+    />
+  )
+}
+
+export { Label }

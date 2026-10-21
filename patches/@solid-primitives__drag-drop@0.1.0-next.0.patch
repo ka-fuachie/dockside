@@ -1,0 +1,538 @@
+diff --git a/dist/context.js b/dist/context.js
+index e235976aa5df0325420d10cef5158a65fdacb979..abe738cd404decf01154dca711e4de31d713a49a 100644
+--- a/dist/context.js
++++ b/dist/context.js
+@@ -1,7 +1,14 @@
+ /* @ts-self-types="./context.d.ts" */
+ import { pointerWithin } from "./collision.js";
+-import { createComponent } from "solid-js/web";
+-import { createContext, createProjection, createSignal, onCleanup, untrack, useContext } from "solid-js";
++import {
++  createComponent,
++  createContext,
++  createProjection,
++  createSignal,
++  onCleanup,
++  untrack,
++  useContext,
++} from "solid-js";
+ import { isServer } from "@solidjs/web";
+ import { INTERNAL_OPTIONS } from "@solid-primitives/utils";
+ //#region src/context.tsx
+@@ -10,258 +17,266 @@ const DEFAULT_AUTO_SCROLL_THRESHOLD = 60;
+ const DEFAULT_AUTO_SCROLL_SPEED = 15;
+ const DragCtx = createContext();
+ function useDragContext() {
+-	try {
+-		return useContext(DragCtx);
+-	} catch {
+-		return;
+-	}
++  try {
++    return useContext(DragCtx);
++  } catch {
++    return;
++  }
+ }
+ function createDragContext(options = {}) {
+-	if (isServer) {
+-		const Provider = (props) => props.children;
+-		return {
+-			Provider,
+-			active: () => null,
+-			over: () => null,
+-			transform: () => null
+-		};
+-	}
+-	const droppables = /* @__PURE__ */ new Map();
+-	const [active, setActive] = createSignal(null, INTERNAL_OPTIONS);
+-	const [over, setOver] = createSignal(null, INTERNAL_OPTIONS);
+-	const [transform, setTransform] = createSignal(null, INTERNAL_OPTIONS);
+-	let prevActiveId;
+-	const isActiveId = createProjection((s) => {
+-		const id = active()?.id;
+-		if (id != null) s[id] = true;
+-		if (prevActiveId != null && prevActiveId !== id) delete s[prevActiveId];
+-		prevActiveId = id;
+-	}, {});
+-	let prevOverId;
+-	const isOverId = createProjection((s) => {
+-		const id = over()?.id;
+-		if (id != null) s[id] = true;
+-		if (prevOverId != null && prevOverId !== id) delete s[prevOverId];
+-		prevOverId = id;
+-	}, {});
+-	let currentDrag = null;
+-	let startX = 0;
+-	let startY = 0;
+-	let dragStartScrollX = 0;
+-	let dragStartScrollY = 0;
+-	const cachedRects = [];
+-	let dragStartLeft = 0, dragStartTop = 0, dragStartWidth = 0, dragStartHeight = 0;
+-	const snapshotRects = (activeId) => {
+-		cachedRects.length = 0;
+-		for (const [id, entry] of droppables) if (id !== activeId) cachedRects.push({
+-			id,
+-			rect: entry.element.getBoundingClientRect()
+-		});
+-	};
+-	const collide = options.collisionDetection ?? pointerWithin;
+-	let rafPending = false;
+-	let rafId = -1;
+-	let pendingX = 0;
+-	let pendingY = 0;
+-	const maybeAutoScroll = () => {
+-		const cfg = options.autoScroll;
+-		if (!cfg) return;
+-		const threshold = (typeof cfg === "object" ? cfg.threshold : void 0) ?? DEFAULT_AUTO_SCROLL_THRESHOLD;
+-		const speed = (typeof cfg === "object" ? cfg.speed : void 0) ?? DEFAULT_AUTO_SCROLL_SPEED;
+-		let dx = 0;
+-		let dy = 0;
+-		if (pendingX < threshold) dx = -speed;
+-		else if (pendingX > window.innerWidth - threshold) dx = speed;
+-		if (pendingY < threshold) dy = -speed;
+-		else if (pendingY > window.innerHeight - threshold) dy = speed;
+-		if (dx !== 0 || dy !== 0) window.scrollBy(dx, dy);
+-	};
+-	const applyMove = () => {
+-		if (!currentDrag) return;
+-		const tx = pendingX - startX;
+-		const ty = pendingY - startY;
+-		const scrollDX = window.scrollX - dragStartScrollX;
+-		const scrollDY = window.scrollY - dragStartScrollY;
+-		setTransform({
+-			x: tx + scrollDX,
+-			y: ty + scrollDY
+-		});
+-		const draggableRect = {
+-			id: currentDrag.id,
+-			rect: {
+-				left: dragStartLeft + tx,
+-				right: dragStartLeft + dragStartWidth + tx,
+-				top: dragStartTop + ty,
+-				bottom: dragStartTop + dragStartHeight + ty,
+-				width: dragStartWidth,
+-				height: dragStartHeight,
+-				x: dragStartLeft + tx,
+-				y: dragStartTop + ty
+-			}
+-		};
+-		const winnerId = collide(draggableRect, cachedRects, {
+-			x: pendingX,
+-			y: pendingY
+-		});
+-		let winner = null;
+-		if (winnerId !== null) {
+-			const entry = droppables.get(winnerId);
+-			if (entry && !(entry.accept && !entry.accept(currentDrag))) winner = {
+-				id: winnerId,
+-				data: entry.data,
+-				element: entry.element
+-			};
+-		}
+-		if (winner?.id !== untrack(over)?.id) setOver(winner);
+-		options.onDragMove?.(currentDrag, {
+-			x: tx,
+-			y: ty
+-		});
+-	};
+-	const processMove = () => {
+-		rafPending = false;
+-		applyMove();
+-		maybeAutoScroll();
+-	};
+-	const onPointerMove = (event) => {
+-		if (!currentDrag) return;
+-		pendingX = event.clientX;
+-		pendingY = event.clientY;
+-		if (!rafPending) {
+-			rafPending = true;
+-			rafId = requestAnimationFrame(() => {
+-				rafPending = false;
+-				processMove();
+-			});
+-		}
+-	};
+-	const cancelPendingMove = () => {
+-		if (rafPending) {
+-			cancelAnimationFrame(rafId);
+-			rafPending = false;
+-		}
+-	};
+-	const finishDrag = () => {
+-		if (!currentDrag) return;
+-		cancelPendingMove();
+-		const overItem = untrack(over);
+-		const item = currentDrag;
+-		currentDrag = null;
+-		cleanupDrag();
+-		options.onDragEnd?.(item, overItem);
+-		setActive(null);
+-		setOver(null);
+-		setTransform(null);
+-	};
+-	const onPointerUp = (_event) => finishDrag();
+-	const cancelDrag = () => {
+-		if (!currentDrag) return;
+-		cancelPendingMove();
+-		const item = currentDrag;
+-		currentDrag = null;
+-		cleanupDrag();
+-		options.onDragCancel?.(item);
+-		setActive(null);
+-		setOver(null);
+-		setTransform(null);
+-	};
+-	const onPointerCancel = (_event) => cancelDrag();
+-	const onKeyDown = (event) => {
+-		if (event.key === "Escape") cancelDrag();
+-	};
+-	const onScroll = () => {
+-		if (currentDrag) snapshotRects(currentDrag.id);
+-	};
+-	function cleanupDrag() {
+-		document.removeEventListener("pointermove", onPointerMove);
+-		document.removeEventListener("pointerup", onPointerUp);
+-		document.removeEventListener("pointercancel", onPointerCancel);
+-		document.removeEventListener("keydown", onKeyDown);
+-		document.removeEventListener("scroll", onScroll, { capture: true });
+-	}
+-	const beginDrag = (id, element, data, clientX, clientY) => {
+-		startX = clientX;
+-		startY = clientY;
+-		pendingX = clientX;
+-		pendingY = clientY;
+-		dragStartScrollX = window.scrollX;
+-		dragStartScrollY = window.scrollY;
+-		const r = element.getBoundingClientRect();
+-		dragStartLeft = r.left;
+-		dragStartTop = r.top;
+-		dragStartWidth = r.width;
+-		dragStartHeight = r.height;
+-		snapshotRects(id);
+-		const item = {
+-			id,
+-			data,
+-			element
+-		};
+-		currentDrag = item;
+-		setActive(item);
+-		setTransform({
+-			x: 0,
+-			y: 0
+-		});
+-		document.addEventListener("pointermove", onPointerMove);
+-		document.addEventListener("pointerup", onPointerUp);
+-		document.addEventListener("pointercancel", onPointerCancel);
+-		document.addEventListener("keydown", onKeyDown);
+-		document.addEventListener("scroll", onScroll, {
+-			passive: true,
+-			capture: true
+-		});
+-		options.onDragStart?.(item);
+-	};
+-	const _startDrag = (id, element, data, event) => {
+-		beginDrag(id, element, data, event.clientX, event.clientY);
+-	};
+-	const _startKeyboardDrag = (id, element, data) => {
+-		const r = element.getBoundingClientRect();
+-		beginDrag(id, element, data, r.left + r.width / 2, r.top + r.height / 2);
+-	};
+-	const _moveBy = (dx, dy) => {
+-		if (!currentDrag) return;
+-		pendingX += dx;
+-		pendingY += dy;
+-		applyMove();
+-	};
+-	onCleanup(cleanupDrag);
+-	const contextValue = {
+-		active,
+-		over,
+-		transform,
+-		_registerDroppable: (id, element, data, accept) => {
+-			droppables.set(id, {
+-				element,
+-				data,
+-				accept
+-			});
+-			if (currentDrag) snapshotRects(currentDrag.id);
+-		},
+-		_unregisterDroppable: (id) => {
+-			droppables.delete(id);
+-			if (currentDrag) snapshotRects(currentDrag.id);
+-		},
+-		_startDrag,
+-		_startKeyboardDrag,
+-		_moveBy,
+-		_endDrag: finishDrag,
+-		_isActive: (id) => !!isActiveId[id],
+-		_isOver: (id) => !!isOverId[id]
+-	};
+-	const Provider = (props) => createComponent(DragCtx, {
+-		value: contextValue,
+-		get children() {
+-			return props.children;
+-		}
+-	});
+-	return {
+-		Provider,
+-		active,
+-		over,
+-		transform
+-	};
++  if (isServer) {
++    const Provider = (props) => props.children;
++    return {
++      Provider,
++      active: () => null,
++      over: () => null,
++      transform: () => null,
++    };
++  }
++  const droppables = /* @__PURE__ */ new Map();
++  const [active, setActive] = createSignal(null, INTERNAL_OPTIONS);
++  const [over, setOver] = createSignal(null, INTERNAL_OPTIONS);
++  const [transform, setTransform] = createSignal(null, INTERNAL_OPTIONS);
++  let prevActiveId;
++  const isActiveId = createProjection((s) => {
++    const id = active()?.id;
++    if (id != null) s[id] = true;
++    if (prevActiveId != null && prevActiveId !== id) delete s[prevActiveId];
++    prevActiveId = id;
++  }, {});
++  let prevOverId;
++  const isOverId = createProjection((s) => {
++    const id = over()?.id;
++    if (id != null) s[id] = true;
++    if (prevOverId != null && prevOverId !== id) delete s[prevOverId];
++    prevOverId = id;
++  }, {});
++  let currentDrag = null;
++  let startX = 0;
++  let startY = 0;
++  let dragStartScrollX = 0;
++  let dragStartScrollY = 0;
++  const cachedRects = [];
++  let dragStartLeft = 0,
++    dragStartTop = 0,
++    dragStartWidth = 0,
++    dragStartHeight = 0;
++  const snapshotRects = (activeId) => {
++    cachedRects.length = 0;
++    for (const [id, entry] of droppables)
++      if (id !== activeId)
++        cachedRects.push({
++          id,
++          rect: entry.element.getBoundingClientRect(),
++        });
++  };
++  const collide = options.collisionDetection ?? pointerWithin;
++  let rafPending = false;
++  let rafId = -1;
++  let pendingX = 0;
++  let pendingY = 0;
++  const maybeAutoScroll = () => {
++    const cfg = options.autoScroll;
++    if (!cfg) return;
++    const threshold =
++      (typeof cfg === "object" ? cfg.threshold : void 0) ?? DEFAULT_AUTO_SCROLL_THRESHOLD;
++    const speed = (typeof cfg === "object" ? cfg.speed : void 0) ?? DEFAULT_AUTO_SCROLL_SPEED;
++    let dx = 0;
++    let dy = 0;
++    if (pendingX < threshold) dx = -speed;
++    else if (pendingX > window.innerWidth - threshold) dx = speed;
++    if (pendingY < threshold) dy = -speed;
++    else if (pendingY > window.innerHeight - threshold) dy = speed;
++    if (dx !== 0 || dy !== 0) window.scrollBy(dx, dy);
++  };
++  const applyMove = () => {
++    if (!currentDrag) return;
++    const tx = pendingX - startX;
++    const ty = pendingY - startY;
++    const scrollDX = window.scrollX - dragStartScrollX;
++    const scrollDY = window.scrollY - dragStartScrollY;
++    setTransform({
++      x: tx + scrollDX,
++      y: ty + scrollDY,
++    });
++    const draggableRect = {
++      id: currentDrag.id,
++      rect: {
++        left: dragStartLeft + tx,
++        right: dragStartLeft + dragStartWidth + tx,
++        top: dragStartTop + ty,
++        bottom: dragStartTop + dragStartHeight + ty,
++        width: dragStartWidth,
++        height: dragStartHeight,
++        x: dragStartLeft + tx,
++        y: dragStartTop + ty,
++      },
++    };
++    const winnerId = collide(draggableRect, cachedRects, {
++      x: pendingX,
++      y: pendingY,
++    });
++    let winner = null;
++    if (winnerId !== null) {
++      const entry = droppables.get(winnerId);
++      if (entry && !(entry.accept && !entry.accept(currentDrag)))
++        winner = {
++          id: winnerId,
++          data: entry.data,
++          element: entry.element,
++        };
++    }
++    if (winner?.id !== untrack(over)?.id) setOver(winner);
++    options.onDragMove?.(currentDrag, {
++      x: tx,
++      y: ty,
++    });
++  };
++  const processMove = () => {
++    rafPending = false;
++    applyMove();
++    maybeAutoScroll();
++  };
++  const onPointerMove = (event) => {
++    if (!currentDrag) return;
++    pendingX = event.clientX;
++    pendingY = event.clientY;
++    if (!rafPending) {
++      rafPending = true;
++      rafId = requestAnimationFrame(() => {
++        rafPending = false;
++        processMove();
++      });
++    }
++  };
++  const cancelPendingMove = () => {
++    if (rafPending) {
++      cancelAnimationFrame(rafId);
++      rafPending = false;
++    }
++  };
++  const finishDrag = () => {
++    if (!currentDrag) return;
++    cancelPendingMove();
++    const overItem = untrack(over);
++    const item = currentDrag;
++    currentDrag = null;
++    cleanupDrag();
++    options.onDragEnd?.(item, overItem);
++    setActive(null);
++    setOver(null);
++    setTransform(null);
++  };
++  const onPointerUp = (_event) => finishDrag();
++  const cancelDrag = () => {
++    if (!currentDrag) return;
++    cancelPendingMove();
++    const item = currentDrag;
++    currentDrag = null;
++    cleanupDrag();
++    options.onDragCancel?.(item);
++    setActive(null);
++    setOver(null);
++    setTransform(null);
++  };
++  const onPointerCancel = (_event) => cancelDrag();
++  const onKeyDown = (event) => {
++    if (event.key === "Escape") cancelDrag();
++  };
++  const onScroll = () => {
++    if (currentDrag) snapshotRects(currentDrag.id);
++  };
++  function cleanupDrag() {
++    document.removeEventListener("pointermove", onPointerMove);
++    document.removeEventListener("pointerup", onPointerUp);
++    document.removeEventListener("pointercancel", onPointerCancel);
++    document.removeEventListener("keydown", onKeyDown);
++    document.removeEventListener("scroll", onScroll, { capture: true });
++  }
++  const beginDrag = (id, element, data, clientX, clientY) => {
++    startX = clientX;
++    startY = clientY;
++    pendingX = clientX;
++    pendingY = clientY;
++    dragStartScrollX = window.scrollX;
++    dragStartScrollY = window.scrollY;
++    const r = element.getBoundingClientRect();
++    dragStartLeft = r.left;
++    dragStartTop = r.top;
++    dragStartWidth = r.width;
++    dragStartHeight = r.height;
++    snapshotRects(id);
++    const item = {
++      id,
++      data,
++      element,
++    };
++    currentDrag = item;
++    setActive(item);
++    setTransform({
++      x: 0,
++      y: 0,
++    });
++    document.addEventListener("pointermove", onPointerMove);
++    document.addEventListener("pointerup", onPointerUp);
++    document.addEventListener("pointercancel", onPointerCancel);
++    document.addEventListener("keydown", onKeyDown);
++    document.addEventListener("scroll", onScroll, {
++      passive: true,
++      capture: true,
++    });
++    options.onDragStart?.(item);
++  };
++  const _startDrag = (id, element, data, event) => {
++    beginDrag(id, element, data, event.clientX, event.clientY);
++  };
++  const _startKeyboardDrag = (id, element, data) => {
++    const r = element.getBoundingClientRect();
++    beginDrag(id, element, data, r.left + r.width / 2, r.top + r.height / 2);
++  };
++  const _moveBy = (dx, dy) => {
++    if (!currentDrag) return;
++    pendingX += dx;
++    pendingY += dy;
++    applyMove();
++  };
++  onCleanup(cleanupDrag);
++  const contextValue = {
++    active,
++    over,
++    transform,
++    _registerDroppable: (id, element, data, accept) => {
++      droppables.set(id, {
++        element,
++        data,
++        accept,
++      });
++      if (currentDrag) snapshotRects(currentDrag.id);
++    },
++    _unregisterDroppable: (id) => {
++      droppables.delete(id);
++      if (currentDrag) snapshotRects(currentDrag.id);
++    },
++    _startDrag,
++    _startKeyboardDrag,
++    _moveBy,
++    _endDrag: finishDrag,
++    _isActive: (id) => !!isActiveId[id],
++    _isOver: (id) => !!isOverId[id],
++  };
++  const Provider = (props) =>
++    createComponent(DragCtx, {
++      value: contextValue,
++      get children() {
++        return props.children;
++      },
++    });
++  return {
++    Provider,
++    active,
++    over,
++    transform,
++  };
+ }
+ //#endregion
+ export { DEFAULT_KEYBOARD_STEP, createDragContext, useDragContext };

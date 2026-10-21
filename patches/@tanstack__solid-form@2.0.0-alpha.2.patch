@@ -1,0 +1,485 @@
+diff --git a/dist/AppForm/Components.lib.js b/dist/AppForm/Components.lib.js
+index d6667cc05a9da855449165ba9884b2ff85cb15d8..6caa7b7ea505f63dc8770ce6b1c51f0e58adde3a 100644
+--- a/dist/AppForm/Components.lib.js
++++ b/dist/AppForm/Components.lib.js
+@@ -1,42 +1,42 @@
+ import { createArrayField, createField } from "../createField.lib.js";
+ import { attachSolidFormComponents } from "../SolidFormApi.lib.js";
+ import { FieldContext, FormContext } from "./contexts.lib.js";
+-import { createComponent, mergeProps } from "solid-js";
++import { createComponent, merge } from "solid-js";
+ 
+ //#region src/AppForm/Components.lib.ts
+ function attachSolidAppFormComponents(form, formComponents, fieldComponents) {
+-	const resultForm = attachSolidFormComponents(form, fieldComponents);
+-	resultForm.AppForm = function AppForm(props) {
+-		return createComponent(FormContext.Provider, {
+-			value: resultForm,
+-			get children() {
+-				return props.children;
+-			}
+-		});
+-	};
+-	resultForm.Field = function TanStackFormField(props) {
+-		const fieldOptions = mergeProps(props, { form });
+-		const fieldApi = createField(() => fieldOptions);
+-		Object.assign(fieldApi, fieldComponents);
+-		return createComponent(FieldContext.Provider, {
+-			value: fieldApi,
+-			get children() {
+-				return props.children(fieldApi);
+-			}
+-		});
+-	};
+-	resultForm.ArrayField = function TanStackFormArrayField(props) {
+-		const fieldOptions = mergeProps(props, { form });
+-		const fieldApi = createArrayField(() => fieldOptions);
+-		Object.assign(fieldApi, fieldComponents);
+-		return createComponent(FieldContext.Provider, {
+-			value: fieldApi,
+-			get children() {
+-				return props.children(fieldApi);
+-			}
+-		});
+-	};
+-	return Object.assign(resultForm, formComponents);
++  const resultForm = attachSolidFormComponents(form, fieldComponents);
++  resultForm.AppForm = function AppForm(props) {
++    return createComponent(FormContext.Provider, {
++      value: resultForm,
++      get children() {
++        return props.children;
++      },
++    });
++  };
++  resultForm.Field = function TanStackFormField(props) {
++    const fieldOptions = merge(props, { form });
++    const fieldApi = createField(() => fieldOptions);
++    Object.assign(fieldApi, fieldComponents);
++    return createComponent(FieldContext.Provider, {
++      value: fieldApi,
++      get children() {
++        return props.children(fieldApi);
++      },
++    });
++  };
++  resultForm.ArrayField = function TanStackFormArrayField(props) {
++    const fieldOptions = merge(props, { form });
++    const fieldApi = createArrayField(() => fieldOptions);
++    Object.assign(fieldApi, fieldComponents);
++    return createComponent(FieldContext.Provider, {
++      value: fieldApi,
++      get children() {
++        return props.children(fieldApi);
++      },
++    });
++  };
++  return Object.assign(resultForm, formComponents);
+ }
+ 
+ //#endregion
+diff --git a/dist/FieldGroup/withFields.lib.js b/dist/FieldGroup/withFields.lib.js
+index 39b55542bd9bb5a4078a413fe71d995141a2c987..ab36625369c1ac52fb6f51a33417e8b223e24580 100644
+--- a/dist/FieldGroup/withFields.lib.js
++++ b/dist/FieldGroup/withFields.lib.js
+@@ -1,37 +1,47 @@
+-import { InternalFieldGroupApi, defineFieldGroupFieldsRuntime, fieldGroupHelperRuntime } from "@tanstack/form-core/internals";
+-import { createComponent, mergeProps, splitProps } from "solid-js";
++import {
++  InternalFieldGroupApi,
++  defineFieldGroupFieldsRuntime,
++  fieldGroupHelperRuntime,
++} from "@tanstack/form-core/internals";
++import { createComponent, merge, omit } from "solid-js";
+ 
+ //#region src/FieldGroup/withFields.lib.ts
+ function attachSolidFieldGroupComponents(group, form) {
+-	const Field = (props) => createComponent(form.Field, group._getFormFieldOptions(props, mergeProps));
+-	const ArrayField = (props) => createComponent(form.ArrayField, group._getFormFieldOptions(props, mergeProps));
+-	const Subscribe = (props) => createComponent(form.Subscribe, props);
+-	return Object.assign(group, {
+-		Field,
+-		ArrayField,
+-		Subscribe
+-	});
++  const Field = (props) => createComponent(form.Field, group._getFormFieldOptions(props, merge));
++  const ArrayField = (props) =>
++    createComponent(form.ArrayField, group._getFormFieldOptions(props, merge));
++  const Subscribe = (props) => createComponent(form.Subscribe, props);
++  return Object.assign(group, {
++    Field,
++    ArrayField,
++    Subscribe,
++  });
+ }
+ function defineFieldGroupRuntime(defineFieldGroupFn) {
+-	const fields = defineFieldGroupFieldsRuntime(defineFieldGroupFn(fieldGroupHelperRuntime));
+-	return {
+-		fields,
+-		bindComponent: (Component, fieldsPropName) => withFieldsRuntime(fields, Component, fieldsPropName)
+-	};
++  const fields = defineFieldGroupFieldsRuntime(defineFieldGroupFn(fieldGroupHelperRuntime));
++  return {
++    fields,
++    bindComponent: (Component, fieldsPropName) =>
++      withFieldsRuntime(fields, Component, fieldsPropName),
++  };
+ }
+ function withFieldsRuntime(fields, Component, fieldsPropName) {
+-	const fieldNames = Object.keys(fields);
+-	return function FieldGroupComponent(props) {
+-		const [localProps, restProps] = splitProps(props, ["form", fieldsPropName]);
+-		const form = localProps.form;
+-		if (!form) throw new Error("TanStack Form: Field groups must receive a `form` prop.");
+-		const fieldGroupApi = attachSolidFieldGroupComponents(new InternalFieldGroupApi({
+-			form,
+-			fieldNames,
+-			getBindings: () => localProps[fieldsPropName]
+-		}), form);
+-		return createComponent(Component, mergeProps(restProps, { [fieldsPropName]: fieldGroupApi }));
+-	};
++  const fieldNames = Object.keys(fields);
++  return function FieldGroupComponent(props) {
++    const localProps = props;
++    const restProps = omit(props, "form", fieldsPropName);
++    const form = localProps.form;
++    if (!form) throw new Error("TanStack Form: Field groups must receive a `form` prop.");
++    const fieldGroupApi = attachSolidFieldGroupComponents(
++      new InternalFieldGroupApi({
++        form,
++        fieldNames,
++        getBindings: () => localProps[fieldsPropName],
++      }),
++      form,
++    );
++    return createComponent(Component, merge(restProps, { [fieldsPropName]: fieldGroupApi }));
++  };
+ }
+ 
+ //#endregion
+diff --git a/dist/SolidFormApi.lib.js b/dist/SolidFormApi.lib.js
+index 77ec21fbf283fa498eed35ccf1013d2366b9ee1a..15bdb9ef0b721e7f674b15d50a776d0aff484de3 100644
+--- a/dist/SolidFormApi.lib.js
++++ b/dist/SolidFormApi.lib.js
+@@ -2,83 +2,106 @@ import { Subscribe } from "./Subscribe.public.js";
+ import { createArrayField, createField } from "./createField.lib.js";
+ import { shallow, useSelector } from "@tanstack/solid-store";
+ import { InternalFormApi, InternalFormGroupApi } from "@tanstack/form-core/internals";
+-import { createComponent, createMemo, createRenderEffect, createUniqueId, mergeProps, onCleanup, untrack } from "solid-js";
++import {
++  createComponent,
++  createMemo,
++  createRenderEffect,
++  createUniqueId,
++  merge,
++  onCleanup,
++  untrack,
++} from "solid-js";
+ 
+ //#region src/SolidFormApi.lib.ts
+ function attachSolidFormComponents(form, fieldComponents) {
+-	const solidFormApi = form;
+-	solidFormApi.Field = function TanStackFormField(props) {
+-		const fieldOptions = mergeProps(props, { form });
+-		const fieldApi = createField(() => fieldOptions);
+-		if (fieldComponents !== null) Object.assign(fieldApi, fieldComponents);
+-		return props.children(fieldApi);
+-	};
+-	solidFormApi.ArrayField = function TanStackFormArrayField(props) {
+-		const fieldOptions = mergeProps(props, { form });
+-		const fieldApi = createArrayField(() => fieldOptions);
+-		if (fieldComponents !== null) Object.assign(fieldApi, fieldComponents);
+-		return props.children(fieldApi);
+-	};
+-	solidFormApi.Subscribe = function TanStackFormSubscribe(props) {
+-		return createComponent(Subscribe, mergeProps(props, { source: solidFormApi.atom }));
+-	};
+-	solidFormApi.FormGroup = function TanStackFormGroup(props) {
+-		const group = attachSolidFormGroupComponents(new InternalFormGroupApi({
+-			...props,
+-			form
+-		}), solidFormApi);
+-		createRenderEffect(() => group.update({
+-			...props,
+-			form
+-		}));
+-		group.mount();
+-		onCleanup(() => group._cleanup());
+-		const state = useSelector(group.atom, (value) => value, { compare: shallow });
+-		const groupAccessor = createMemo(() => {
+-			state();
+-			return group;
+-		}, void 0, { equals: false });
+-		Object.assign(groupAccessor, {
+-			Field: group.Field,
+-			ArrayField: group.ArrayField,
+-			Subscribe: group.Subscribe
+-		});
+-		return props.children(groupAccessor);
+-	};
+-	return solidFormApi;
++  const solidFormApi = form;
++  solidFormApi.Field = function TanStackFormField(props) {
++    const fieldOptions = merge(props, { form });
++    const fieldApi = createField(() => fieldOptions);
++    if (fieldComponents !== null) Object.assign(fieldApi, fieldComponents);
++    return props.children(fieldApi);
++  };
++  solidFormApi.ArrayField = function TanStackFormArrayField(props) {
++    const fieldOptions = merge(props, { form });
++    const fieldApi = createArrayField(() => fieldOptions);
++    if (fieldComponents !== null) Object.assign(fieldApi, fieldComponents);
++    return props.children(fieldApi);
++  };
++  solidFormApi.Subscribe = function TanStackFormSubscribe(props) {
++    return createComponent(Subscribe, merge(props, { source: solidFormApi.atom }));
++  };
++  solidFormApi.FormGroup = function TanStackFormGroup(props) {
++    const group = attachSolidFormGroupComponents(
++      new InternalFormGroupApi({
++        ...props,
++        form,
++      }),
++      solidFormApi,
++    );
++    createRenderEffect(
++      () => ({ ...props }),
++      (allProps) =>
++        group.update({
++          ...allProps,
++          form,
++        }),
++    );
++    group.mount();
++    onCleanup(() => group._cleanup());
++    const state = useSelector(group.atom, (value) => value, { compare: shallow });
++    const groupAccessor = createMemo(
++      () => {
++        state();
++        return group;
++      },
++      { equals: false },
++    );
++    Object.assign(groupAccessor, {
++      Field: group.Field,
++      ArrayField: group.ArrayField,
++      Subscribe: group.Subscribe,
++    });
++    return props.children(groupAccessor);
++  };
++  return solidFormApi;
+ }
+ function attachSolidFormGroupComponents(group, form) {
+-	const resultGroup = group;
+-	resultGroup.Field = function Field(props) {
+-		return createComponent(form.Field, group._getFormFieldOptions(props, mergeProps));
+-	};
+-	resultGroup.ArrayField = function ArrayField(props) {
+-		return createComponent(form.ArrayField, group._getFormFieldOptions(props, mergeProps));
+-	};
+-	resultGroup.Subscribe = function GroupSubscribe(props) {
+-		return createComponent(Subscribe, mergeProps(props, { source: group.atom }));
+-	};
+-	return resultGroup;
++  const resultGroup = group;
++  resultGroup.Field = function Field(props) {
++    return createComponent(form.Field, group._getFormFieldOptions(props, merge));
++  };
++  resultGroup.ArrayField = function ArrayField(props) {
++    return createComponent(form.ArrayField, group._getFormFieldOptions(props, merge));
++  };
++  resultGroup.Subscribe = function GroupSubscribe(props) {
++    return createComponent(Subscribe, merge(props, { source: group.atom }));
++  };
++  return resultGroup;
+ }
+ function initializeForm(options) {
+-	return attachSolidFormComponents(new InternalFormApi(options), null);
++  return attachSolidFormComponents(new InternalFormApi(options), null);
+ }
+ function createInternalForm(options, initializeFn) {
+-	const solidFormId = createUniqueId();
+-	const resolveOptions = () => {
+-		const current = options();
+-		return current.formId === void 0 ? {
+-			...current,
+-			formId: solidFormId
+-		} : current;
+-	};
+-	const form = untrack(() => initializeFn(resolveOptions()));
+-	createRenderEffect(() => {
+-		form._update(resolveOptions());
+-	});
+-	const unmount = form.mount();
+-	onCleanup(unmount);
+-	return form;
++  const solidFormId = createUniqueId();
++  const resolveOptions = () => {
++    const current = options();
++    return current.formId === void 0
++      ? {
++          ...current,
++          formId: solidFormId,
++        }
++      : current;
++  };
++  const form = untrack(() => initializeFn(resolveOptions()));
++  createRenderEffect(
++    () => resolveOptions(),
++    (resolvedOptions) => {
++      form._update(resolvedOptions);
++    },
++  );
++  const unmount = form.mount();
++  onCleanup(unmount);
++  return form;
+ }
+ 
+ //#endregion
+diff --git a/dist/createField.lib.js b/dist/createField.lib.js
+index c931c6fb9fee4bb176fa12ef22e74540c4d57a77..510b15a8f305d767a46707290a314348d9d6f73a 100644
+--- a/dist/createField.lib.js
++++ b/dist/createField.lib.js
+@@ -3,62 +3,92 @@ import { createMemo, createRenderEffect, createSignal, onCleanup, untrack } from
+ 
+ //#region src/createField.lib.ts
+ function createFieldSelector(fieldApi, selector, compare) {
+-	const [selected, setSelected] = createSignal(selector(fieldApi()), { equals: compare });
+-	createRenderEffect(() => {
+-		const field = fieldApi();
+-		setSelected(() => selector(field));
+-		const subscription = field.atom.subscribe(() => {
+-			setSelected(() => selector(field));
+-		});
+-		onCleanup(() => subscription.unsubscribe());
+-	});
+-	return selected;
++  const [selected, setSelected] = createSignal(selector(fieldApi()), {
++    equals: compare,
++    ownedWrite: true,
++  });
++  createRenderEffect(
++    () => fieldApi(),
++    (field) => {
++      setSelected(() => selector(field));
++      const subscription = field.atom.subscribe(() => {
++        setSelected(() => selector(field));
++      });
++      return () => subscription.unsubscribe();
++    },
++  );
++  return selected;
+ }
+ function createInternalField(options) {
+-	const initialForm = untrack(options).form;
+-	const [resetVersion, setResetVersion] = createSignal(initialForm._atoms.resetVersion.get());
+-	const resetSubscription = initialForm._atoms.resetVersion.subscribe((version) => setResetVersion(version));
+-	onCleanup(() => resetSubscription.unsubscribe());
+-	const fieldApi = createMemo(() => {
+-		const reactiveOptions = options();
+-		const form = reactiveOptions.form;
+-		const name = reactiveOptions.name;
+-		resetVersion();
+-		return form._getOrCreateFieldApi({
+-			...untrack(options),
+-			name
+-		}, "field");
+-	});
+-	createRenderEffect(() => {
+-		fieldApi()._update(options(), "field");
+-	});
+-	createRenderEffect(() => {
+-		const cleanup = fieldApi()._register();
+-		onCleanup(cleanup);
+-	});
+-	return fieldApi;
++  const initialForm = untrack(options).form;
++  const [resetVersion, setResetVersion] = createSignal(initialForm._atoms.resetVersion.get());
++  const resetSubscription = initialForm._atoms.resetVersion.subscribe((version) =>
++    setResetVersion(version),
++  );
++  onCleanup(() => resetSubscription.unsubscribe());
++  const fieldApi = createMemo(() => {
++    const reactiveOptions = options();
++    const form = reactiveOptions.form;
++    const name = reactiveOptions.name;
++    resetVersion();
++    return form._getOrCreateFieldApi(
++      {
++        ...untrack(options),
++        name,
++      },
++      "field",
++    );
++  });
++  createRenderEffect(
++    () => fieldApi(),
++    (field) => {
++      field._update(options(), "field");
++    },
++  );
++  createRenderEffect(
++    () => fieldApi(),
++    (field) => {
++      const cleanup = field._register();
++      return cleanup;
++    },
++  );
++  return fieldApi;
+ }
+ function createField(options) {
+-	const fieldApi = createInternalField(options);
+-	const state = createFieldSelector(fieldApi, (field) => ({
+-		value: field.value,
+-		meta: field.meta
+-	}), shallow);
+-	return createMemo(() => {
+-		state();
+-		return fieldApi();
+-	}, void 0, { equals: false });
++  const fieldApi = createInternalField(options);
++  const state = createFieldSelector(
++    fieldApi,
++    (field) => ({
++      value: field.value,
++      meta: field.meta,
++    }),
++    shallow,
++  );
++  return createMemo(
++    () => {
++      state();
++      return fieldApi();
++    },
++    { equals: false },
++  );
+ }
+ function createArrayField(options) {
+-	const fieldApi = createInternalField(options);
+-	const arrayState = createFieldSelector(fieldApi, (field) => ({
+-		length: field.value.length,
+-		version: field.meta._arrayVersion
+-	}), shallow);
+-	return createMemo(() => {
+-		arrayState();
+-		return fieldApi();
+-	}, void 0, { equals: false });
++  const fieldApi = createInternalField(options);
++  const arrayState = createFieldSelector(
++    fieldApi,
++    (field) => ({
++      length: field.value.length,
++      version: field.meta._arrayVersion,
++    }),
++    shallow,
++  );
++  return createMemo(
++    () => {
++      arrayState();
++      return fieldApi();
++    },
++    { equals: false },
++  );
+ }
+ 
+ //#endregion

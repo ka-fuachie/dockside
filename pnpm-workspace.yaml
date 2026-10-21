@@ -20,3 +20,7 @@ minimumReleaseAgeExclude:
   - solid-js
   - '@solidjs/*'
   - filesystem-routing
+patchedDependencies:
+  '@solid-primitives/drag-drop@0.1.0-next.0': patches/@solid-primitives__drag-drop@0.1.0-next.0.patch
+  '@tanstack/solid-form@2.0.0-alpha.2': patches/@tanstack__solid-form@2.0.0-alpha.2.patch
+  '@tanstack/solid-store@0.11.2': patches/@tanstack__solid-store@0.11.2.patch

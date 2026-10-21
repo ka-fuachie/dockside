@@ -26,6 +26,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     resolve: {
       conditions: command == "serve" ? ["source"] : [],
+      tsconfigPaths: true,
     },
     server: {
       port: Number(env.WEB_PORT),

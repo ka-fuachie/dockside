@@ -1,6 +1,8 @@
 import { Title } from '@solidjs/meta';
 import { Loading } from 'solid-js';
 import { Router } from './router';
+import { Toaster } from '@/components/ui/sonner';
+
 import './App.css';
 
 export default function App() {
@@ -9,6 +11,7 @@ export default function App() {
       {(props) => (
         <>
           <Title>Dockside</Title>
+          <Toaster />
           <Loading fallback={<main class="px-4 py-12">Loading…</main>}>
             {props.children}
           </Loading>

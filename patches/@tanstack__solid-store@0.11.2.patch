@@ -1,0 +1,261 @@
+diff --git a/dist/createStoreContext.cjs b/dist/createStoreContext.cjs
+index 2f783210c700865d7640597ccc3a59d1bd7a9f3f..d9c53678208609300c924ed7d7bc670c0a05ce29 100644
+--- a/dist/createStoreContext.cjs
++++ b/dist/createStoreContext.cjs
+@@ -1,67 +1,66 @@
+-let solid_js_web = require("solid-js/web");
+ let solid_js = require("solid-js");
+ 
+ //#region src/createStoreContext.tsx
+ /**
+-* Creates a typed Solid context for sharing a bundle of atoms and stores with a
+-* subtree.
+-*
+-* The returned `StoreProvider` only transports the provided object through
+-* Solid context. Consumers destructure the contextual atoms and stores, then
+-* compose them with the existing hooks like {@link useSelector} and
+-* {@link useAtom}.
+-*
+-* The object shape is preserved exactly, so keyed atoms and stores remain fully
+-* typed when read back with `useStoreContext()`.
+-*
+-* @example
+-* ```tsx
+-* const { StoreProvider, useStoreContext } = createStoreContext<{
+-*   countAtom: Atom<number>
+-*   totalsStore: Store<{ count: number }>
+-* }>()
+-*
+-* function CountButton() {
+-*   const { countAtom, totalsStore } = useStoreContext()
+-*   const count = useSelector(countAtom)
+-*   const total = useSelector(totalsStore, (state) => state.count)
+-*
+-*   return (
+-*     <button
+-*       type="button"
+-*       onClick={() =>
+-*         totalsStore.setState((state) => ({ ...state, count: state.count + 1 }))
+-*       }
+-*     >
+-*       {count()} / {total()}
+-*     </button>
+-*   )
+-* }
+-* ```
+-*
+-* @throws When `useStoreContext()` is called outside the matching `StoreProvider`.
+-*/
++ * Creates a typed Solid context for sharing a bundle of atoms and stores with a
++ * subtree.
++ *
++ * The returned `StoreProvider` only transports the provided object through
++ * Solid context. Consumers destructure the contextual atoms and stores, then
++ * compose them with the existing hooks like {@link useSelector} and
++ * {@link useAtom}.
++ *
++ * The object shape is preserved exactly, so keyed atoms and stores remain fully
++ * typed when read back with `useStoreContext()`.
++ *
++ * @example
++ * ```tsx
++ * const { StoreProvider, useStoreContext } = createStoreContext<{
++ *   countAtom: Atom<number>
++ *   totalsStore: Store<{ count: number }>
++ * }>()
++ *
++ * function CountButton() {
++ *   const { countAtom, totalsStore } = useStoreContext()
++ *   const count = useSelector(countAtom)
++ *   const total = useSelector(totalsStore, (state) => state.count)
++ *
++ *   return (
++ *     <button
++ *       type="button"
++ *       onClick={() =>
++ *         totalsStore.setState((state) => ({ ...state, count: state.count + 1 }))
++ *       }
++ *     >
++ *       {count()} / {total()}
++ *     </button>
++ *   )
++ * }
++ * ```
++ *
++ * @throws When `useStoreContext()` is called outside the matching `StoreProvider`.
++ */
+ function createStoreContext() {
+-	const Context = (0, solid_js.createContext)();
+-	function StoreProvider(props) {
+-		return (0, solid_js_web.createComponent)(Context.Provider, {
+-			get value() {
+-				return props.value;
+-			},
+-			get children() {
+-				return props.children;
+-			}
+-		});
+-	}
+-	function useStoreContext() {
+-		const value = (0, solid_js.useContext)(Context);
+-		if (value === void 0) throw new Error("Missing StoreProvider for StoreContext");
+-		return value;
+-	}
+-	return {
+-		StoreProvider,
+-		useStoreContext
+-	};
++  const Context = (0, solid_js.createContext)();
++  function StoreProvider(props) {
++    return (0, solid_js.createComponent)(Context.Provider, {
++      get value() {
++        return props.value;
++      },
++      get children() {
++        return props.children;
++      },
++    });
++  }
++  function useStoreContext() {
++    const value = (0, solid_js.useContext)(Context);
++    if (value === void 0) throw new Error("Missing StoreProvider for StoreContext");
++    return value;
++  }
++  return {
++    StoreProvider,
++    useStoreContext,
++  };
+ }
+ 
+ //#endregion
+diff --git a/dist/createStoreContext.js b/dist/createStoreContext.js
+index 0a0011947c627325064a9f843d598b9ddbdc8ad9..67562827b5e0f7d7026d959d1f6895b3a04a4926 100644
+--- a/dist/createStoreContext.js
++++ b/dist/createStoreContext.js
+@@ -1,67 +1,66 @@
+-import { createComponent } from "solid-js/web";
+-import { createContext, useContext } from "solid-js";
++import { createContext, useContext, createComponent } from "solid-js";
+ 
+ //#region src/createStoreContext.tsx
+ /**
+-* Creates a typed Solid context for sharing a bundle of atoms and stores with a
+-* subtree.
+-*
+-* The returned `StoreProvider` only transports the provided object through
+-* Solid context. Consumers destructure the contextual atoms and stores, then
+-* compose them with the existing hooks like {@link useSelector} and
+-* {@link useAtom}.
+-*
+-* The object shape is preserved exactly, so keyed atoms and stores remain fully
+-* typed when read back with `useStoreContext()`.
+-*
+-* @example
+-* ```tsx
+-* const { StoreProvider, useStoreContext } = createStoreContext<{
+-*   countAtom: Atom<number>
+-*   totalsStore: Store<{ count: number }>
+-* }>()
+-*
+-* function CountButton() {
+-*   const { countAtom, totalsStore } = useStoreContext()
+-*   const count = useSelector(countAtom)
+-*   const total = useSelector(totalsStore, (state) => state.count)
+-*
+-*   return (
+-*     <button
+-*       type="button"
+-*       onClick={() =>
+-*         totalsStore.setState((state) => ({ ...state, count: state.count + 1 }))
+-*       }
+-*     >
+-*       {count()} / {total()}
+-*     </button>
+-*   )
+-* }
+-* ```
+-*
+-* @throws When `useStoreContext()` is called outside the matching `StoreProvider`.
+-*/
++ * Creates a typed Solid context for sharing a bundle of atoms and stores with a
++ * subtree.
++ *
++ * The returned `StoreProvider` only transports the provided object through
++ * Solid context. Consumers destructure the contextual atoms and stores, then
++ * compose them with the existing hooks like {@link useSelector} and
++ * {@link useAtom}.
++ *
++ * The object shape is preserved exactly, so keyed atoms and stores remain fully
++ * typed when read back with `useStoreContext()`.
++ *
++ * @example
++ * ```tsx
++ * const { StoreProvider, useStoreContext } = createStoreContext<{
++ *   countAtom: Atom<number>
++ *   totalsStore: Store<{ count: number }>
++ * }>()
++ *
++ * function CountButton() {
++ *   const { countAtom, totalsStore } = useStoreContext()
++ *   const count = useSelector(countAtom)
++ *   const total = useSelector(totalsStore, (state) => state.count)
++ *
++ *   return (
++ *     <button
++ *       type="button"
++ *       onClick={() =>
++ *         totalsStore.setState((state) => ({ ...state, count: state.count + 1 }))
++ *       }
++ *     >
++ *       {count()} / {total()}
++ *     </button>
++ *   )
++ * }
++ * ```
++ *
++ * @throws When `useStoreContext()` is called outside the matching `StoreProvider`.
++ */
+ function createStoreContext() {
+-	const Context = createContext();
+-	function StoreProvider(props) {
+-		return createComponent(Context.Provider, {
+-			get value() {
+-				return props.value;
+-			},
+-			get children() {
+-				return props.children;
+-			}
+-		});
+-	}
+-	function useStoreContext() {
+-		const value = useContext(Context);
+-		if (value === void 0) throw new Error("Missing StoreProvider for StoreContext");
+-		return value;
+-	}
+-	return {
+-		StoreProvider,
+-		useStoreContext
+-	};
++  const Context = createContext();
++  function StoreProvider(props) {
++    return createComponent(Context.Provider, {
++      get value() {
++        return props.value;
++      },
++      get children() {
++        return props.children;
++      },
++    });
++  }
++  function useStoreContext() {
++    const value = useContext(Context);
++    if (value === void 0) throw new Error("Missing StoreProvider for StoreContext");
++    return value;
++  }
++  return {
++    StoreProvider,
++    useStoreContext,
++  };
+ }
+ 
+ //#endregion
