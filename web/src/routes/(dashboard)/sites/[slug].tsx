@@ -1,26 +1,19 @@
 import { defineFileRoute } from "@solidjs/router/fs"
-import { getSite } from "../../data/sites"
+import { getSite } from "@/data/sites"
 import { RouteProps } from "@solidjs/router"
 import { createMemo, Errored } from "solid-js"
 import { Loading } from "solid-js"
 import { Title } from "@solidjs/meta"
-import { paths } from "../../router"
+import { paths } from "@/router"
 
-export const route = defineFileRoute("/sites/:id", {
+export const route = defineFileRoute("/sites/:slug", {
   preload({ params }) {
-    if (params.slug != null) {
-      getSite(params.slug)
-    }
+    return getSite(params.slug)
   }
 })
 
 export default function SiteDetail(props: RouteProps<typeof route>) {
-  const site = createMemo(() => {
-    if (props.params.slug == null) {
-      throw new Error("invalid site slug")
-    }
-    return getSite(props.params.slug)
-  })
+  const site = createMemo(() => props.data);
 
   return (
     <div>

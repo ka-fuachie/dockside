@@ -1,17 +1,18 @@
 import { defineFileRoute } from "@solidjs/router/fs"
-import { getSitesList } from "../../data/sites"
+import { getSitesList } from "@/data/sites"
 import { createMemo, Errored, For, Loading } from "solid-js"
 import { Title } from "@solidjs/meta"
-import { paths } from "../../router"
+import { paths } from "@/router"
+import { RouteProps } from "@solidjs/router"
 
 export const route = defineFileRoute("/sites", {
   preload() {
-    getSitesList()
+    return getSitesList()
   }
 })
 
-export default function Sites() {
-  const sites = createMemo(() => getSitesList())
+export default function Sites(props: RouteProps<typeof route>) {
+  const sites = createMemo(() => props.data)
 
   return (
     <div>

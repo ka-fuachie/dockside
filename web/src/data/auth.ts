@@ -1,8 +1,8 @@
 import "zod/compile";
 import * as z from "zod";
 import { event, validate } from "../lib/server/utils";
-import { setSessionId } from "../server/session";
-import { redirect } from "@solidjs/web";
+import { clearSessionId, setSessionId } from "../server/session";
+import { redirect, respond } from "@solidjs/web";
 import { handleApiError } from "../lib/server/error";
 
 export function safeNext(value: unknown): string | undefined {
@@ -31,4 +31,15 @@ export async function login(form: FormData) {
   await setSessionId(event(), session.id);
 
   return redirect(safeNext(form.get("next")) ?? "/");
+}
+
+export async function logout() {
+  "use server";
+
+  const { api, session } = event().locals;
+  if (session == null) return respond(null, { status: 204 });
+
+  await api.auth.logout({ refreshToken: session?.refreshToken }).catch(handleApiError);
+  await clearSessionId(event());
+  throw redirect("/login");
 }

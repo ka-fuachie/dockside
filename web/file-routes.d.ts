@@ -35,6 +35,24 @@ declare module "virtual:file-routes" {
   /** The flat route manifest, in scan order. */
   const routes: readonly [
     {
+      path: "/(dashboard)";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)")>;
+    },
+    {
+      path: "/(dashboard)/sites/:slug";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)/sites/[slug]")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)/sites/[slug]")>;
+    },
+    {
+      path: "/(dashboard)/sites/";
+      page: true;
+      $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)/sites/index")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)/sites/index")>;
+    },
+    {
       path: "/*404";
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/[...404]")>;
@@ -45,24 +63,6 @@ declare module "virtual:file-routes" {
       page: true;
       $component: FileRouteLazyRef<typeof import("./src/routes/index")>;
       $$route: FileRouteEagerRef<typeof import("./src/routes/index")>;
-    },
-    {
-      path: "/sites";
-      page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
-    },
-    {
-      path: "/sites/:slug";
-      page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites/[slug]")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/[slug]")>;
-    },
-    {
-      path: "/sites/";
-      page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
     },
     {
       path: "/login";
@@ -100,26 +100,26 @@ declare module "virtual:file-routes" {
       children?: undefined;
     },
     {
-      path: "/sites";
-      id: "/sites";
+      path: "/";
+      id: "/(dashboard)";
       page: true;
-      $component: FileRouteLazyRef<typeof import("./src/routes/sites")>;
-      $$route: FileRouteEagerRef<typeof import("./src/routes/sites")>;
+      $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)")>;
+      $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)")>;
       children: readonly [
         {
-          path: "/";
-          id: "/";
+          path: "/sites/";
+          id: "/sites/";
           page: true;
-          $component: FileRouteLazyRef<typeof import("./src/routes/sites/index")>;
-          $$route: FileRouteEagerRef<typeof import("./src/routes/sites/index")>;
+          $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)/sites/index")>;
+          $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)/sites/index")>;
           children?: undefined;
         },
         {
-          path: "/:slug";
-          id: "/:slug";
+          path: "/sites/:slug";
+          id: "/sites/:slug";
           page: true;
-          $component: FileRouteLazyRef<typeof import("./src/routes/sites/[slug]")>;
-          $$route: FileRouteEagerRef<typeof import("./src/routes/sites/[slug]")>;
+          $component: FileRouteLazyRef<typeof import("./src/routes/(dashboard)/sites/[slug]")>;
+          $$route: FileRouteEagerRef<typeof import("./src/routes/(dashboard)/sites/[slug]")>;
           children?: undefined;
         }
       ];

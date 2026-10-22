@@ -5,6 +5,8 @@ import { QueryKeys } from "../lib/server/query";
 import { redirect } from "@solidjs/web";
 import { paths } from "../router";
 
+export type User = NonNullable<ReturnType<typeof readAccessClaims>>;
+
 export const getCurrentUser = query(async () => {
   "use server";
   const session = event().locals.session;
