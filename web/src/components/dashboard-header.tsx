@@ -38,7 +38,7 @@ export default function DashboardHeader(props: { user: User }) {
         </nav>
       </div>
 
-      <div class="flex gap-2 pe-(--padding-inline) py-(--padding-block)">
+      <div class="flex items-center gap-4 pe-(--padding-inline) py-(--padding-block)">
         <div>
           <p class="">{props.user.username}</p>
           <p class="font-mono text-xs opacity-60">{props.user.role}</p>
