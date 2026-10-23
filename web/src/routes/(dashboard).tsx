@@ -15,7 +15,7 @@ export default function Dashboard(props: RouteProps<typeof route>) {
   return (
     <div>
       <DashboardHeader user={user()} />
-      <main>
+      <main class="grid">
         {props.children}
       </main>
     </div>

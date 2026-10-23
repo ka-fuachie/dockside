@@ -67,7 +67,7 @@ function TableRow(props: ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       class={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        "border-b transition-colors [thead_>_*]:bg-muted/90 [:not(thead_>_*)&]:hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
         props.class
       )}
       {...otherProps}
@@ -82,7 +82,7 @@ function TableHead(props: ComponentProps<"th">) {
     <th
       data-slot="table-head"
       class={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground has-[[role=checkbox]]:pr-0",
+        "h-10 px-3 text-left align-middle font-medium whitespace-nowrap text-foreground has-[[role=checkbox]]:pr-0",
         props.class
       )}
       {...otherProps}
@@ -97,7 +97,7 @@ function TableCell(props: ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       class={cn(
-        "p-2 align-middle whitespace-nowrap has-[[role=checkbox]]:pr-0",
+        "p-3 align-middle text-left whitespace-nowrap has-[[role=checkbox]]:pr-0",
         props.class
       )}
       {...otherProps}

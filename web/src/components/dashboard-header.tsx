@@ -4,7 +4,6 @@ import { User } from "@/data/user";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon } from "@lucide/solid";
 import { logout } from "@/data/auth";
-import { toast } from "@/lib/solid-sonner";
 import { ComponentProps } from "@solidjs/web";
 import { cn } from "cn";
 import { omit } from "solid-js";
@@ -45,9 +44,10 @@ export default function DashboardHeader(props: { user: User }) {
         </div>
 
         <Button
-          variant="secondary"
+          variant="tonal"
+          size="sm"
           onClick={() => {
-            logout().catch(err => toast.error((err as Error).message))
+            logout().catch()
           }}
         >
           <LogOutIcon />

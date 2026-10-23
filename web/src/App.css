@@ -181,15 +181,23 @@
     letter-spacing: var(--tracking-normal);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    :focus {
-      outline: 2px solid var(--ring);
+  .catch-focus :focus-visible {
+    outline: none;
+  }
+
+  .catch-focus:where(:has(:focus-visible)),
+  :focus-visible:where(:not(.catch-focus :focus-visible)) {
+    outline: 2px solid var(--ring);
+    @media (prefers-reduced-motion: no-preference) {
       transition: outline-offset 100ms ease;
     }
+  }
 
-    :focus:not(:active) {
+  .catch-focus:where(:has(:focus-visible:not(:active))),
+  :focus-visible:where(:not(:active):not(.catch-focus :focus-visible)) {
+    outline-offset: var(--offset, 3px);
+    @media (prefers-reduced-motion: no-preference) {
       transition: outline-offset 150ms ease;
-      outline-offset: 5px;
     }
   }
 }

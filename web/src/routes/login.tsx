@@ -7,31 +7,14 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Logo from "@/components/logo"
 import { Show } from "solid-js"
+import { isInvalid, useSubmissionsError } from "@/lib/form"
 
 const loginAction = action(login)
-
-const isInvalid = (issues: Record<string, string> | null, name: string) => {
-  if(issues == null) return false
-  if (name in issues) return issues[name].trim() != ""
-  return false
-}
 
 export default function Login() {
   const [search] = useSearchParams()
   const submissions = useSubmissions(loginAction)
-  const error = () => {
-    const error = submissions.at(-1)?.error
-      if(error == null) return null
-      if(isServerError(error)) {
-        return error
-      }
-      return {code: "", message: (error as Error).message, fields: null}
-  }
-  const issues = () => error()?.fields ?? null
-  const errorMessage = () => {
-    if(error()?.code == "BAD_CREDENTIALS") return "Invalid username or password"
-    return null
-  }
+  const { errorMessage, issues } = useSubmissionsError(submissions)
 
   return (
     <>
@@ -53,7 +36,7 @@ export default function Login() {
             action={loginAction}
             class="group"
           >
-            <input type="hidden" name="next" value={safeNext(search.next) ?? "/"} />
+            <input type="hidden" name="next" value={safeNext(search.next) ?? "/sites"} />
 
             <FieldGroup>
               <Field data-invalid={String(isInvalid(issues(), "username"))}>
