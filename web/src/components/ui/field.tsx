@@ -6,7 +6,6 @@ import { cn } from "cn"
 import { children, createMemo, For, Match, merge, omit, Switch } from "solid-js"
 import { ComponentProps } from "@solidjs/web"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Show } from "solid-js"
 
 function FieldSet(props: ComponentProps<"fieldset">) {
@@ -151,33 +150,6 @@ function FieldDescription(props: ComponentProps<"p">) {
   )
 }
 
-function FieldSeparator(props: ComponentProps<"div">) {
-  const resolved = children(() => props.children)
-  const otherProps = omit(props, "class", "children")
-
-  return (
-    <div
-      data-slot="field-separator"
-      data-content={!!resolved()}
-      class={cn(
-        "relative -my-2 h-5 text-sm group-data-[variant=outline]/field-group:-mb-2",
-        props.class
-      )}
-      {...otherProps}
-    >
-      <Separator class="absolute inset-0 top-1/2" />
-      <Show when={resolved()}>
-        <span
-          class="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
-          data-slot="field-separator-content"
-        >
-          {resolved()}
-        </span>
-      </Show>
-    </div>
-  )
-}
-
 function FieldError(
   props: ComponentProps<"div"> & {
     errors?: Array<{ message?: string } | undefined>
@@ -231,7 +203,6 @@ export {
   FieldError,
   FieldGroup,
   FieldLegend,
-  FieldSeparator,
   FieldSet,
   FieldContent,
   FieldTitle,

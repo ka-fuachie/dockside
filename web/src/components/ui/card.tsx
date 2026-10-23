@@ -1,4 +1,3 @@
-import * as React from "react"
 import { cn } from "cn"
 import { merge } from "solid-js"
 import { omit } from "solid-js"

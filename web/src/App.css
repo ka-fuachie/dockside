@@ -180,4 +180,16 @@
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :focus {
+      outline: 2px solid var(--ring);
+      transition: outline-offset 100ms ease;
+    }
+
+    :focus:not(:active) {
+      transition: outline-offset 150ms ease;
+      outline-offset: 5px;
+    }
+  }
 }

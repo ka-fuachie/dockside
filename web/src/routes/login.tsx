@@ -1,50 +1,37 @@
 import { Title } from "@solidjs/meta"
-import { action, useSearchParams } from "@solidjs/router"
+import { action, useSearchParams, useSubmissions } from "@solidjs/router"
 import { login, safeNext } from "../data/auth"
 import { isServerError } from "../lib/server/error"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { createForm } from "@tanstack/solid-form"
-import "zod/compile"
-import * as z from "zod"
-import { isInvalid } from "@/lib/form"
-import { toast } from "@/lib/solid-sonner"
 import Logo from "@/components/logo"
+import { Show } from "solid-js"
 
 const loginAction = action(login)
 
+const isInvalid = (issues: Record<string, string> | null, name: string) => {
+  if(issues == null) return false
+  if (name in issues) return issues[name].trim() != ""
+  return false
+}
+
 export default function Login() {
   const [search] = useSearchParams()
-  const form = createForm(() => ({
-    defaultValues: {
-      username: "",
-      password: ""
-    },
-    validators: [{
-      triggers: ["change"],
-      run: z.object({
-        username: z.string().min(1, "Username is required"),
-        password: z.string().min(1, "Password is required")
-      })
-    }],
-    onSubmit: async ({ value }) => {
-      const formData = new FormData()
-      for (const [k, v] of Object.entries(value)) {
-        formData.set(k, v)
+  const submissions = useSubmissions(loginAction)
+  const error = () => {
+    const error = submissions.at(-1)?.error
+      if(error == null) return null
+      if(isServerError(error)) {
+        return error
       }
-
-      try {
-        await login(formData)
-      } catch (err) {
-        if (isServerError(err) && err.code === "BAD_CREDENTIALS") {
-          toast.error("Invalid username or password")
-        } else {
-          toast.error("Unknown error")
-        }
-      }
-    }
-  }))
+      return {code: "", message: (error as Error).message, fields: null}
+  }
+  const issues = () => error()?.fields ?? null
+  const errorMessage = () => {
+    if(error()?.code == "BAD_CREDENTIALS") return "Invalid username or password"
+    return null
+  }
 
   return (
     <>
@@ -55,56 +42,47 @@ export default function Login() {
           <Logo class="text-6xl" />
           <h1 class="text-4xl text-left">Log in</h1>
 
+          <div aria-live="polite">
+            <Show when={errorMessage()}>
+              {(message) => <p class="text-destructive text-left">{message()}</p>}
+            </Show>
+          </div>
+
           <form
             method="post"
-            action={loginAction.url}
-            onSubmit={(ev) => {
-              ev.preventDefault()
-              ev.stopPropagation()
-              form.handleSubmit()
-            }}
+            action={loginAction}
+            class="group"
           >
             <input type="hidden" name="next" value={safeNext(search.next) ?? "/"} />
 
             <FieldGroup>
-              <form.Field name="username">
-                {(field) => (
-                  <Field data-invalid={isInvalid(field())}>
-                    <FieldLabel for={field().name}>Username</FieldLabel>
-                    <Input
-                      type="text"
-                      id={field().name}
-                      name={field().name}
-                      value={field().value}
-                      onBlur={field().handleBlur}
-                      onInput={ev => field().handleChange(ev.currentTarget.value)}
-                      aria-invalid={isInvalid(field())}
-                    />
-                    {isInvalid(field()) && <FieldError errors={field().meta.errors} />}
-                  </Field>
-                )}
-              </form.Field>
+              <Field data-invalid={String(isInvalid(issues(), "username"))}>
+                <FieldLabel for="username">Username</FieldLabel>
+                <Input
+                  type="text"
+                  id="username"
+                  name="username"
+                  aria-invalid={isInvalid(issues(), "username") ? "true": "false"}
+                />
+                {isInvalid(issues(), "username") && <FieldError>{issues()!.username}</FieldError>}
+              </Field>
 
-              <form.Field name="password">
-                {(field) => (
-                  <Field data-invalid={isInvalid(field())}>
-                    <FieldLabel for={field().name}>Password</FieldLabel>
-                    <Input
-                      type="password"
-                      id={field().name}
-                      name={field().name}
-                      value={field().value}
-                      onBlur={field().handleBlur}
-                      onInput={ev => field().handleChange(ev.currentTarget.value)}
-                      aria-invalid={isInvalid(field())}
-                    />
-                    {isInvalid(field()) && <FieldError errors={field().meta.errors} />}
-                  </Field>
-                )}
-              </form.Field>
+              <Field data-invalid={String(isInvalid(issues(), "password"))}>
+                <FieldLabel for="password">Password</FieldLabel>
+                <Input
+                  type="password"
+                  id="password"
+                  name="password"
+                  aria-invalid={isInvalid(issues(), "password") ? "true": "false"}
+                />
+                {isInvalid(issues(), "password") && <FieldError>{issues()!.password}</FieldError>}
+              </Field>
 
               <Field>
-                <Button type="submit" disabled={form.state.isSubmitting}>Log in</Button>
+                <Button
+                  type="submit"
+                  class="group-aria-busy:opacity-50 group-aria-busy:pointer-events-none"
+                >Log in</Button>
               </Field>
             </FieldGroup>
           </form>
