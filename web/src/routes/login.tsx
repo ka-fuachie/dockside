@@ -64,7 +64,6 @@ export default function Login() {
               <Field>
                 <Button
                   type="submit"
-                  class="group-aria-busy:opacity-50 group-aria-busy:pointer-events-none"
                 >Log in</Button>
               </Field>
             </FieldGroup>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { createSignal, Switch, Match } from "solid-js"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogBody, DialogHeader, DialogModal, DialogTrigger } from "@/components/ui/dialog"
 import { slugify } from "@/lib/utils"
 import { isInvalid, useSubmissionsError } from "@/lib/form"
 import { PageContent, PageHeader, PageHeaderActions, PageTitle } from "@/components/page"
@@ -21,62 +21,82 @@ import { DeploymentStatus, SiteStatusBadge } from "@/components/site-badges"
 
 const createSiteAction = action(createSite)
 
-// function AddSiteAction() {
-//   const submissions = useSubmissions(createSiteAction)
-//   const { errorMessage, issues } = useSubmissionsError(submissions)
-//   const [name, setName] = createSignal("")
-//
-//   return (
-//     <Dialog>
-//       <DialogTrigger>
-//         <PlusIcon />
-//         <span>Add site</span>
-//       </DialogTrigger>
-//
-//       <DialogContent>
-//         <DialogHeader>
-//           <DialogTitle>New Site</DialogTitle>
-//         </DialogHeader>
-//
-//         <form
-//           method="post"
-//         >
-//           <FieldGroup>
-//             <Field data-invalid={String(isInvalid(issues(), "name"))}>
-//               <FieldLabel for="name">Name</FieldLabel>
-//               <Input
-//                 type="text"
-//                 id="name"
-//                 name="name"
-//                 onInput={ev => setName(ev.currentTarget.value)}
-//                 aria-invalid={isInvalid(issues(), "name") ? "true": "false"}
-//               />
-//               {isInvalid(issues(), "name") && <FieldError>{issues()!.name}</FieldError>}
-//             </Field>
-//
-//             <Field data-invalid={String(isInvalid(issues(), "slug"))}>
-//               <FieldLabel for="slug">Slug<span class="text-muted/50 text-xs" aria-hidden="true">(optional)</span></FieldLabel>
-//               <Input
-//                 type="text"
-//                 id="slug"
-//                 name="slug"
-//                 aria-invalid={isInvalid(issues(), "slug") ? "true": "false"}
-//               />
-//               <Show when={name().trim() != ""}>
-//                 <FieldDescription class="text-xs">Auto generated as {slugify(name().trim())}</FieldDescription>
-//               </Show>
-//               {isInvalid(issues(), "slug") && <FieldError>{issues()!.slug}</FieldError>}
-//             </Field>
-//
-//             <Field>
-//               <Button type="submit">Add Site</Button>
-//             </Field>
-//           </FieldGroup>
-//         </form>
-//       </DialogContent>
-//     </Dialog>
-//   )
-// }
+function AddSiteAction() {
+  const submissions = useSubmissions(createSiteAction)
+  const { errorMessage, issues, clearError } = useSubmissionsError(submissions)
+  const [name, setName] = createSignal("")
+  const [slug, setSlug] = createSignal("")
+  let formRef: HTMLFormElement | null = null
+
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <PlusIcon />
+        <span>Add site</span>
+      </DialogTrigger>
+
+      <DialogModal
+        onClose={() => {
+          clearError()
+          formRef?.reset()
+          setName("")
+          setSlug("")
+        }}
+      >
+        <DialogBody>
+          <DialogHeader>
+            <h2 class="text-xl text-left">New Site</h2>
+          </DialogHeader>
+
+          <div aria-live="polite">
+            <Show when={errorMessage()}>
+              {(message) => <p class="text-destructive text-left">{message()}</p>}
+            </Show>
+          </div>
+
+          <form
+            method="post"
+            action={createSiteAction}
+            ref={node => formRef = node}
+          >
+            <FieldGroup>
+              <Field data-invalid={String(isInvalid(issues(), "name"))}>
+                <FieldLabel for="name">Name</FieldLabel>
+                <Input
+                  type="text"
+                  id="name"
+                  name="name"
+                  onInput={ev => setName(ev.currentTarget.value)}
+                  aria-invalid={isInvalid(issues(), "name") ? "true": "false"}
+                />
+                {isInvalid(issues(), "name") && <FieldError>{issues()!.name}</FieldError>}
+              </Field>
+
+              <Field data-invalid={String(isInvalid(issues(), "slug"))}>
+                <FieldLabel for="slug" class="gap-1">Slug<span class="text-muted-foreground/75 text-xs" aria-hidden="true">(optional)</span></FieldLabel>
+                <Input
+                  type="text"
+                  id="slug"
+                  name="slug"
+                  onInput={ev => setSlug(ev.currentTarget.value)}
+                  aria-invalid={isInvalid(issues(), "slug") ? "true": "false"}
+                />
+                <Show when={name().trim() != "" && slug().trim() == ""}>
+                  <FieldDescription class="text-sm">Auto generated as {slugify(name().trim())}</FieldDescription>
+                </Show>
+                {isInvalid(issues(), "slug") && <FieldError>{issues()!.slug}</FieldError>}
+              </Field>
+
+              <Field class="items-end">
+                <Button type="submit" class="w-fit!">Add Site</Button>
+              </Field>
+            </FieldGroup>
+          </form>
+        </DialogBody>
+      </DialogModal>
+    </Dialog>
+  )
+}
 
 export const route = defineFileRoute("/sites", {
   preload() {
@@ -100,8 +120,7 @@ export default function Sites(props: RouteProps<typeof route>) {
         <PageHeader>
           <PageTitle>Sites</PageTitle>
           <PageHeaderActions>
-            <></>
-            {/*<AddSiteAction />*/}
+            <AddSiteAction />
           </PageHeaderActions>
         </PageHeader>
 

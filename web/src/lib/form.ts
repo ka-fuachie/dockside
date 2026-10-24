@@ -21,6 +21,7 @@ export function useSubmissionsError(submissions: Submission<[form: FormData], ne
     if (error()?.code == "BAD_CREDENTIALS") return "Invalid username or password";
     return null;
   };
+  const clearError = () => submissions.at(-1)?.clear();
 
-  return { error, issues, errorMessage };
+  return { error, issues, errorMessage, clearError };
 }

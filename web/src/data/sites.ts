@@ -1,11 +1,12 @@
 import "zod/compile";
 import * as z from "zod";
 import { query } from "@solidjs/router";
-import { event, validate } from "../lib/server/utils";
-import { redirect, reload, respond } from "@solidjs/web";
-import { paths } from "../router";
-import { QueryKeys } from "../lib/server/query";
+import { event, validate } from "@/lib/server/utils";
+import { redirect, respond } from "@solidjs/web";
+import { paths } from "@/router";
+import { QueryKeys } from "@/lib/server/query";
 import { formatError, handleApiError } from "../lib/server/error";
+import { slugify } from "@/lib/utils";
 
 export const getSitesList = query(async (params?: { page?: number; size?: number }) => {
   "use server";
@@ -31,21 +32,25 @@ export const getSite = query(async (slug: string) => {
 
 const CreateSitePayloadSchema = z.object({
   name: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9-]+$/),
+  slug: z.string().regex(/^[a-z0-9-]*$/),
 });
 
 export const createSite = async (form: FormData) => {
   "use server";
-  const payload = {
+  let payload = {
     name: form.get("name"),
     slug: form.get("slug"),
   };
   validate(CreateSitePayloadSchema, payload);
 
+  if (payload.slug == "") {
+    payload.slug = slugify(payload.name) ?? "";
+  }
+
   const { session, api } = event().locals;
   if (session == null)
     throw respond(formatError("UNAUTHORIZED", "authentication required"), { status: 401 });
 
-  await api.sites.create(payload).catch(handleApiError);
-  return reload({ revalidate: getSitesList.key });
+  const site = await api.sites.create(payload).catch(handleApiError);
+  return redirect(paths.sites(site.slug));
 };

@@ -5,17 +5,19 @@ import { omit } from "solid-js"
 import { merge } from "solid-js"
 
 const buttonVariants = cva(
-  "cursor-pointer flex justify-center items-center gap-2 bg-primary text-foreground rounded-full px-4 py-4 font-medium active:scale-99 disabled:opacity-50 disabled:cursor-not-allowed",
+  "cursor-pointer flex justify-center items-center gap-2 bg-primary text-foreground rounded-full px-4 py-4 font-medium active:scale-99 disabled:opacity-50 disabled:cursor-not-allowed group-aria-busy:opacity-50 group-aria-busy:pointer-events-none group-aria-busy:cursor-not-allowed",
   {
     variants: {
       variant: {
         filled: "",
         tonal: "bg-muted",
         outlined: "bg-transparent border border-muted-foreground/30",
+        ghost: "bg-transparent text-primary",
       },
       size: {
         base: "",
         sm: "px-4 py-2 gap-2 text-sm [&_svg]:size-4",
+        "icon-sm": "px-2 py-2 text-sm [&_svg]:size-4",
         xs: "px-3 py-1 gap-1 text-sm [&_svg]:size-4",
       }
     },
