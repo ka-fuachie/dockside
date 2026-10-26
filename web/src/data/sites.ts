@@ -1,17 +1,20 @@
 import "zod/compile";
 import * as z from "zod";
 import { query } from "@solidjs/router";
-import { event, validate } from "@/lib/server/utils";
+import { event, PageableSchema, validate } from "@/lib/server/utils";
 import { redirect, respond } from "@solidjs/web";
 import { paths } from "@/router";
 import { QueryKeys } from "@/lib/server/query";
 import { formatError, handleApiError } from "../lib/server/error";
 import { slugify } from "@/lib/utils";
+import env from "virtual:env/server";
 
-export const getSitesList = query(async (params?: { page?: number; size?: number }) => {
+export const getSitesList = query(async (params?: z.infer<typeof PageableSchema>) => {
   "use server";
   const { session, api } = event().locals;
   if (session == null) throw redirect(paths.login());
+
+  validate(PageableSchema, params);
 
   const page = await api.sites.list(params).catch(handleApiError);
   return page;
@@ -21,6 +24,8 @@ export const getSite = query(async (slug: string) => {
   "use server";
   const { session, api } = event().locals;
   if (session == null) throw redirect(paths.login());
+
+  validate(z.string().min(1), slug);
 
   const sites = await api.sites.list().catch(handleApiError);
   const siteId = sites.content.find((site) => site.slug === slug)?.id;
@@ -54,3 +59,8 @@ export const createSite = async (form: FormData) => {
   const site = await api.sites.create(payload).catch(handleApiError);
   return redirect(paths.sites(site.slug));
 };
+
+export const getSiteUrl = query(async (slug: string) => {
+  "use server";
+  return Promise.resolve(`${env.SITES_BASE_URL}/sites/${slug}`);
+}, QueryKeys.SITE + "--url");

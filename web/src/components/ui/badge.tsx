@@ -8,7 +8,7 @@ function Badge(props: ComponentProps<"span">) {
   return (
     <span
       data-slot="badge"
-      class={cn("inline-flex items-center gap-1 px-2 py-0.5 text-xs [&_svg]:size-3 rounded-full bg-buted", props.class)}
+      class={cn("inline-flex items-center align-middle gap-1 px-2 py-0.5 text-xs [&_svg]:size-3 rounded-full bg-buted", props.class)}
       {...otherProps}
     />
   )

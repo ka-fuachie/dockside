@@ -26,19 +26,19 @@ export function SiteStatusBadge(props: { status?: "up" | "down" | null }) {
 const DeploymentStatusBadgeStyle = {
   running: "text-amber-500 bg-amber-500/25",
   success: "text-green-500 bg-green-500/25",
-  failure: "text-red-500 bg-red-200/25",
+  failed: "text-red-500 bg-red-200/25",
 }
 
 const DeploymentStatusBadgeText = {
   running: "Running",
   success: "Success",
-  failure: "Failure"
+  failed: "Failed"
 }
 
-export function DeploymentStatus(props: { status: "running" | "success" | "failure" }) {
+export function DeploymentStatus(props: { status: "running" | "success" | "failed" }) {
   return (
     <Badge class={DeploymentStatusBadgeStyle[props.status]}>
-      <Switch fallback={<DotIcon class="size-4" />}>
+      <Switch fallback={<DotIcon class="size-6! -m-2" />}>
         <Match when={props.status === "running"}>
           <LoaderCircleIcon class="animate-spin" />
         </Match>

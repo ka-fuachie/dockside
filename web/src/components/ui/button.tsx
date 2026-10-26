@@ -45,4 +45,4 @@ function Button(props: ComponentProps<"button"> & VariantProps<typeof buttonVari
   )
 }
 
-export { Button }
+export { Button, buttonVariants }

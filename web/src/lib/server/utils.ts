@@ -1,4 +1,5 @@
 import { getRequestEvent, respond } from "@solidjs/web";
+import "zod/compile"
 import * as z from "zod";
 import { formatError } from "./error";
 
@@ -30,3 +31,8 @@ export function event() {
   if (ev == null) throw new Error("Missing request event");
   return ev;
 }
+
+export const PageableSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional()
+}).optional()

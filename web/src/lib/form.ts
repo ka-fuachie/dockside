@@ -7,7 +7,7 @@ export function isInvalid(issues: Record<string, string> | null, name: string) {
   return false;
 }
 
-export function useSubmissionsError(submissions: Submission<[form: FormData], never>[]) {
+export function useSubmissionsError<T, U>(submissions: Submission<T, U>[]) {
   const error = () => {
     const error = submissions.at(-1)?.error;
     if (error == null) return null;
@@ -19,9 +19,11 @@ export function useSubmissionsError(submissions: Submission<[form: FormData], ne
   const issues = () => error()?.fields ?? null;
   const errorMessage = () => {
     if (error()?.code == "BAD_CREDENTIALS") return "Invalid username or password";
-    return null;
+    return error()?.message ?? null;
   };
-  const clearError = () => submissions.at(-1)?.clear();
+  const clearErrors = () => {
+    for (const s of submissions) s.clear();
+  };
 
-  return { error, issues, errorMessage, clearError };
+  return { error, issues, errorMessage, clearErrors };
 }

@@ -10,7 +10,7 @@ function Table(props: ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      class="relative w-full overflow-x-auto"
+      class="relative w-full overflow-x-auto rounded-lg border border-border"
     >
       <table
         data-slot="table"
@@ -60,14 +60,17 @@ function TableFooter(props: ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow(props: ComponentProps<"tr">) {
+function TableRow(props: ComponentProps<"tr"> & {header?: boolean}) {
   const otherProps = omit(props, "class")
+  const header = () => !!props.header
 
   return (
     <tr
       data-slot="table-row"
       class={cn(
         "border-b transition-colors [thead_>_*]:bg-muted/90 [:not(thead_>_*)&]:hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        header() && "[&>th:first-child]:rounded-tl-lg [&>th:last-child]:rounded-tr-lg",
+        !header() && "relative isolate last-of-type:[&>td:first-child]:rounded-bl-lg last-of-type:[&>td:last-child]:rounded-br-lg",
         props.class
       )}
       {...otherProps}

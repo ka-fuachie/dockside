@@ -13,7 +13,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogBody, DialogHeader, DialogModal, DialogTrigger } from "@/components/ui/dialog"
 import { slugify } from "@/lib/utils"
 import { isInvalid, useSubmissionsError } from "@/lib/form"
-import { PageContent, PageHeader, PageHeaderActions, PageTitle } from "@/components/page"
+import { PageBody, PageContent, PageHeader, PageHeaderActions, PageTitle } from "@/components/page"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { formatAbsoluteDate, formatSmartDate } from "@/lib/date"
 import { paths } from "@/router"
@@ -23,7 +23,7 @@ const createSiteAction = action(createSite)
 
 function AddSiteAction() {
   const submissions = useSubmissions(createSiteAction)
-  const { errorMessage, issues, clearError } = useSubmissionsError(submissions)
+  const { errorMessage, issues, clearErrors } = useSubmissionsError(submissions)
   const [name, setName] = createSignal("")
   const [slug, setSlug] = createSignal("")
   let formRef: HTMLFormElement | null = null
@@ -37,7 +37,7 @@ function AddSiteAction() {
 
       <DialogModal
         onClose={() => {
-          clearError()
+          clearErrors()
           formRef?.reset()
           setName("")
           setSlug("")
@@ -116,7 +116,7 @@ export default function Sites(props: RouteProps<typeof route>) {
     <>
       <Title>Sites - Dockside</Title>
 
-      <PageContent>
+      <PageBody>
         <PageHeader>
           <PageTitle>Sites</PageTitle>
           <PageHeaderActions>
@@ -124,7 +124,7 @@ export default function Sites(props: RouteProps<typeof route>) {
           </PageHeaderActions>
         </PageHeader>
 
-        <div class="grid gap-6">
+        <PageContent>
           <FieldSet>
             <FieldLegend class="sr-only">Sites filter</FieldLegend>
 
@@ -195,61 +195,59 @@ export default function Sites(props: RouteProps<typeof route>) {
             <Loading fallback={<p>Loading Sites...</p>}>
               <Switch>
                 <Match when={(search.view ?? "list") === "list"}>
-                  <div class="rounded-lg border border-border">
-                    <Table>
-                      <TableCaption class="sr-only">Sites list</TableCaption>
-                      <TableHeader>
-                        <TableRow class="[&>th:first-child]:rounded-tl-lg [&>th:last-child]:rounded-tr-lg">
-                          <TableHead>Name/Slug</TableHead>
-                          <TableHead>Created</TableHead>
-                          <TableHead>Latest</TableHead>
-                          <TableHead>Current</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead><span class="sr-only">Action</span></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <For each={sites().content} keyed={item => item.id}>
-                          {(item) => (
-                            <TableRow class="relative isolate last-of-type:[&>td:first-child]:rounded-bl-lg last-of-type:[&>td:last-child]:rounded-br-lg">
-                              <TableCell>
-                                <div class="flex items-center gap-2">
-                                  <GlobeIcon class="text-muted-foreground size-4" />
-                                  <div class="grid gap-1">
-                                    <span class="font-medium text-md">{item().name}</span>
-                                    <span class="text-xs text-muted-foreground">/{item().slug}</span>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <time datetime={item().createdAt}>{formatSmartDate(item().createdAt)}</time>
-                              </TableCell>
-                              <TableCell>
+                  <Table>
+                    <TableCaption class="sr-only">Sites list</TableCaption>
+                    <TableHeader>
+                      <TableRow header>
+                        <TableHead>Name/Slug</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Latest</TableHead>
+                        <TableHead>Current</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead><span class="sr-only">Actions</span></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <For each={sites().content} keyed={item => item.id}>
+                        {(item) => (
+                          <TableRow>
+                            <TableCell>
+                              <div class="flex items-center gap-2">
+                                <GlobeIcon class="text-muted-foreground size-4" />
                                 <div class="grid gap-1">
-                                  <p class="flex items-center gap-1">
-                                    <span>v12</span>
-                                    <DeploymentStatus status="running" />
-                                  </p>
-                                  <time datetime={new Date().toISOString()} class="text-xs text-muted-foreground">{formatAbsoluteDate(new Date().toISOString())}</time>
+                                  <span class="font-medium text-md">{item().name}</span>
+                                  <span class="text-xs text-muted-foreground">/{item().slug}</span>
                                 </div>
-                              </TableCell>
-                              <TableCell>{item().currentVersion != null ? `v${item().currentVersion}`: "-"}</TableCell>
-                              <TableCell>
-                                <SiteStatusBadge status={item().currentVersion == null ? null: item().up ? "up" : "down"} />
-                              </TableCell>
-                              <TableCell>
-                                <a href={paths.sites(item().slug)} class="block w-fit">
-                                  <ChevronRightIcon class="size-5 text-muted-foreground" />
-                                  <span class="sr-only">View details</span>
-                                  <div class="absolute inset-0" />
-                                </a>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </For>
-                      </TableBody>
-                    </Table>
-                  </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <time datetime={item().createdAt}>{formatSmartDate(item().createdAt)}</time>
+                            </TableCell>
+                            <TableCell>
+                              <div class="grid gap-1">
+                                <p class="flex items-center gap-1">
+                                  <span>v12</span>
+                                  <DeploymentStatus status="running" />
+                                </p>
+                                <time datetime={new Date().toISOString()} class="text-xs text-muted-foreground">{formatAbsoluteDate(new Date().toISOString())}</time>
+                              </div>
+                            </TableCell>
+                            <TableCell>{item().currentVersion != null ? `v${item().currentVersion}`: "-"}</TableCell>
+                            <TableCell>
+                              <SiteStatusBadge status={item().currentVersion == null ? null: item().up ? "up" : "down"} />
+                            </TableCell>
+                            <TableCell>
+                              <a href={paths.sites(item().slug)} class="block w-fit">
+                                <ChevronRightIcon class="size-5 text-muted-foreground" />
+                                <span class="sr-only">View details</span>
+                                <div class="absolute inset-0" />
+                              </a>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </For>
+                    </TableBody>
+                  </Table>
                 </Match>
                 <Match when={search.view === "grid"}>
                   <div class="grid grid-cols-[repeat(auto-fit,minmax(17.5rem,1fr))] gap-4">
@@ -310,8 +308,8 @@ export default function Sites(props: RouteProps<typeof route>) {
               </div>
             </Loading>
           </Errored>
-        </div>
-      </PageContent>
+        </PageContent>
+      </PageBody>
     </>
   )
 }
