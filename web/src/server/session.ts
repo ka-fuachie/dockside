@@ -9,7 +9,7 @@ const maxAge = THIRTY_DAYS_SECS;
 const sessionCookie = createCookie("sid", {
   secrets: env.WEB_SESSION_SECRET.split(","),
   httpOnly: true,
-  secure: true,
+  secure: env.NODE_ENV === "production",
   sameSite: "Lax",
   maxAge,
 });

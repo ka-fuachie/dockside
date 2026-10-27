@@ -19,6 +19,7 @@ declare module 'virtual:env/server' {
     ? O
     : string;
   const env: {
+    readonly "NODE_ENV": __Out<__Schema["server"]["NODE_ENV"]>;
     readonly "API_URL": __Out<__Schema["server"]["API_URL"]>;
     readonly "SITES_BASE_URL": __Out<__Schema["server"]["SITES_BASE_URL"]>;
     readonly "WEB_SESSION_SECRET": __Out<__Schema["server"]["WEB_SESSION_SECRET"]>;
