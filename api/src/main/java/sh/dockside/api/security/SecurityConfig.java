@@ -53,6 +53,7 @@ public class SecurityConfig {
           Role.ADMIN.name(), Role.DEV.name()
         )
         .requestMatchers("/agent/**").hasRole("AGENT")
+        .requestMatchers("/users/**").hasRole(Role.ADMIN.name())
         .requestMatchers(HttpMethod.POST, "/deployments/*/rollback").hasAnyRole(Role.ADMIN.name(), Role.DEV.name())
         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
         .anyRequest().authenticated()
