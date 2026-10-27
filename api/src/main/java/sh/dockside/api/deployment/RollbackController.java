@@ -35,6 +35,7 @@ public class RollbackController {
 
     var site = deployment.getSite();
     site.setCurrentVersion(deployment.getVersion());
-    return SiteResponse.from(sites.save(site));
+    var latest = deployments.findFirstBySiteIdOrderByVersionDesc(site.getId()).orElse(null);
+    return SiteResponse.from(sites.save(site), null, latest);
   }
 }
