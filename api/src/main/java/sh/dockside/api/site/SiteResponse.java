@@ -2,6 +2,8 @@ package sh.dockside.api.site;
 
 import java.time.Instant;
 
+import sh.dockside.api.deployment.Deployment;
+import sh.dockside.api.deployment.DeploymentStatus;
 import sh.dockside.api.health.HealthCheck;
 
 public record SiteResponse(
@@ -12,13 +14,20 @@ public record SiteResponse(
   Instant createdAt,
   Boolean up,
   Instant checkedAt,
-  String createdByUsername
+  String createdByUsername,
+  Latest latestDeployment
 ) {
+  public record Latest(Integer version, DeploymentStatus status) {}
+
   public static SiteResponse from(Site s) {
-    return from(s, null);
+    return from(s, null, null);
   }
 
   public static SiteResponse from(Site s, HealthCheck h) {
+    return from(s, h, null);
+  }
+
+  public static SiteResponse from(Site s, HealthCheck h, Deployment latest) {
     return new SiteResponse(
       s.getId(),
       s.getSlug(),
@@ -27,7 +36,8 @@ public record SiteResponse(
       s.getCreatedAt(),
       h == null ? null : h.getUp(),
       h == null ? null : h.getCheckedAt(),
-      s.getCreatedBy() != null ? s.getCreatedBy().getUsername(): null
+      s.getCreatedBy() != null ? s.getCreatedBy().getUsername(): null,
+      latest == null ? null : new Latest(latest.getVersion(), latest.getStatus())
     );
   }
 }

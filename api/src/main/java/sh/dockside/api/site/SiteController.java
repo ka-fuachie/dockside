@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import sh.dockside.api.deployment.DeploymentRepository;
 import sh.dockside.api.health.HealthCheckRepository;
 import sh.dockside.api.user.User;
 import sh.dockside.api.user.UserRepository;
@@ -26,16 +27,19 @@ public class SiteController {
   private final SiteRepository sites;
   private final HealthCheckRepository health;
   private final UserRepository users;
+  private final DeploymentRepository deployments;
 
-  public SiteController(SiteRepository sites, HealthCheckRepository health, UserRepository users) {
+  public SiteController(SiteRepository sites, HealthCheckRepository health, UserRepository users, DeploymentRepository deployments) {
     this.sites = sites;
     this.health = health;
     this.users = users;
+    this.deployments = deployments;
   }
 
   private SiteResponse withHealth(Site site) {
     var healthCheck = health.findTopBySiteIdOrderByCheckedAtDesc(site.getId()).orElse(null);
-    return SiteResponse.from(site, healthCheck);
+    var latest = deployments.findFirstBySiteIdOrderByVersionDesc(site.getId()).orElse(null);
+    return SiteResponse.from(site, healthCheck, latest);
   }
 
   private User currentUser() {
