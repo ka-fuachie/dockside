@@ -2,6 +2,9 @@ import * as z from "zod";
 import { agent } from "./contracts/agent";
 import { auth, AuthResponseSchema } from "./contracts/auth";
 import { deployments } from "./contracts/deployments";
+import { users } from "./contracts/users";
+import { incidents } from "./contracts/incidents";
+import { healthChecks } from "./contracts/health";
 import { sites } from "./contracts/sites";
 import { ContractContext, ContractEntityResponseKind, ContractEntry } from "./contracts/utils";
 import { makeRequest } from "./request";
@@ -39,6 +42,8 @@ function buildMethod<T extends ContractEntry<z.ZodType, z.ZodType>>(
     const context: ContractContext = {
       post: (url, init) => makeRequest(baseUrl, "POST", url, state, init, signal),
       get: (url, init) => makeRequest(baseUrl, "GET", url, state, init, signal),
+      put: (url, init) => makeRequest(baseUrl, "PUT", url, state, init, signal),
+      delete: (url, init) => makeRequest(baseUrl, "DELETE", url, state, init, signal),
       signal,
     };
 
@@ -193,6 +198,9 @@ export function createClient(
     auth: buildDomain(auth),
     sites: buildDomain(sites),
     deployments: buildDomain(deployments),
+    users: buildDomain(users),
+    incidents: buildDomain(incidents),
+    healthChecks: buildDomain(healthChecks),
     agent: buildDomain(agent),
   } as const;
 }

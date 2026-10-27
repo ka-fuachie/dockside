@@ -5,6 +5,8 @@ import { ApiRequestInit } from "../request";
 export type ContractContext = {
   post: (url: string, init?: ApiRequestInit) => Promise<Response>;
   get: (url: string, init?: ApiRequestInit) => Promise<Response>;
+  put: (url: string, init?: ApiRequestInit) => Promise<Response>;
+  delete: (url: string, init?: ApiRequestInit) => Promise<Response>;
   signal?: AbortSignal;
 };
 
@@ -65,6 +67,13 @@ export const SiteSchema = z.object({
   up: z.boolean().nullable().optional(),
   checkedAt: z.string().nullable().optional(),
   createdByUsername: z.string().nullable().optional(),
+  latestDeployment: z
+    .object({
+      version: z.number(),
+      status: z.lazy(() => DeploymentStatusSchema),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const DeploymentStatusSchema = z.enum(["running", "success", "failed"]);
@@ -77,4 +86,29 @@ export const DeploymentSchema = z.object({
   status: DeploymentStatusSchema,
   createdAt: z.string(),
   createdByUsername: z.string().nullable().optional(),
+});
+
+export const UserSchema = z.object({
+  id: z.number(),
+  username: z.string(),
+  role: z.enum(["ADMIN", "DEV"]),
+  createdAt: z.string(),
+});
+
+export const HealthCheckSchema = z.object({
+  siteId: z.number(),
+  checkedAt: z.string(),
+  up: z.boolean(),
+  latencyMs: z.number(),
+  bytes: z.number(),
+});
+
+export const IncidentSchema = z.object({
+  id: z.number(),
+  deploymentId: z.number(),
+  siteId: z.number(),
+  reason: z.string(),
+  logs: z.string().nullable().optional(),
+  resolvedAt: z.string().nullable().optional(),
+  createdAt: z.string(),
 });
