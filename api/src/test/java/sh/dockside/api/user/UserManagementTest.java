@@ -154,11 +154,11 @@ class UserManagementTest {
       .retrieve().toBodilessEntity();
     assertThat(ok.getStatusCode().value()).isEqualTo(204);
 
-    c.put().uri("/users/{id}/role", devId)
+    var victim = c.post().uri("/users")
       .contentType(MediaType.APPLICATION_JSON)
-      .body("{\"role\":\"ADMIN\"}")
-      .retrieve().toBodilessEntity();
-    var deleteSecondAdmin = c.delete().uri("/users/{id}", devId).retrieve().toBodilessEntity();
+      .body("{\"username\":\"victim-" + suffix + "\",\"password\":\"pw12345\",\"role\":\"ADMIN\"}")
+      .retrieve().toEntity(UserResponse.class);
+    var deleteSecondAdmin = c.delete().uri("/users/{id}", victim.getBody().id()).retrieve().toBodilessEntity();
     assertThat(deleteSecondAdmin.getStatusCode().value()).isEqualTo(204);
 
     var lastAdminSelf = c.delete().uri("/users/{id}", adminId)
