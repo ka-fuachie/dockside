@@ -40,7 +40,7 @@ export const users = {
       body: { role: payload.role },
     }),
   ),
-  remove: entry(DeleteRequestSchema, z.void(), (payload, ctx) =>
+  remove: entry(DeleteRequestSchema, z.null(), (payload, ctx) =>
     ctx.delete(`users/${payload.id}`),
   ),
 } as const;
