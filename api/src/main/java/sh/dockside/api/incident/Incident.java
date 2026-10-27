@@ -40,6 +40,13 @@ public class Incident {
 
   public Long getId() { return id; }
 
+  public Deployment getDeployment() { return deployment; }
+  public Site getSite() { return site; }
+  public String getReason() { return reason; }
+  public String getLogs() { return logs; }
+  public Instant getResolvedAt() { return resolvedAt; }
+  public Instant getCreatedAt() { return createdAt; }
+
   public void setDeployment(Deployment deployment) { this.deployment = deployment; }
   public void setSite(Site site) { this.site = site; }
   public void setReason(String reason) { this.reason = reason; }
