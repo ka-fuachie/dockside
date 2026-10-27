@@ -62,5 +62,5 @@ export const createSite = async (form: FormData) => {
 
 export const getSiteUrl = query(async (slug: string) => {
   "use server";
-  return Promise.resolve(`${env.SITES_BASE_URL}/sites/${slug}`);
+  return Promise.resolve(`${env.SITES_BASE_URL}/sites/${slug}/`);
 }, QueryKeys.SITE + "--url");

@@ -103,7 +103,7 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
 
               <PageHeaderActions>
                 <Loading>
-                  <a href={siteUrl()} class={cn(buttonVariants({ size: "sm" }))}>
+                  <a href={siteUrl()} target="_blank" class={cn(buttonVariants({ size: "sm" }))}>
                     <ExternalLinkIcon />
                     <span>Visit site</span>
                   </a>
