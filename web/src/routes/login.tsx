@@ -1,7 +1,6 @@
 import { Title } from "@solidjs/meta"
 import { action, useSearchParams, useSubmissions } from "@solidjs/router"
 import { login, safeNext } from "../data/auth"
-import { isServerError } from "../lib/server/error"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -20,12 +19,19 @@ export default function Login() {
     <>
       <Title>Login - Dockside</Title>
 
-      <main class="h-screen grid justify-center items-center">
-        <div class="min-w-[min(100vw,25rem)] grid gap-6">
+      <main
+        class="min-h-screen grid items-center px-(--form-padding-inline) py-12"
+        style={{
+          "--form-max-width": "30rem",
+          "--form-min-padding-inline": "1rem",
+          "--form-padding-inline": "max(calc((100vw - var(--form-max-width))/2), var(--form-min-padding-inline))"
+        }}
+      >
+        <div class="w-full grid gap-6">
           <Logo class="text-6xl" />
           <h1 class="text-4xl text-left">Log in</h1>
 
-          <div aria-live="polite">
+          <div aria-live="polite" class="empty:hidden">
             <Show when={errorMessage()}>
               {(message) => <p class="text-destructive text-left">{message()}</p>}
             </Show>
