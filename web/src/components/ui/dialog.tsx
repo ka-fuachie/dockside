@@ -98,7 +98,7 @@ export function DialogBody(props: ComponentProps<"div">) {
   const otherProps = omit(props, "class", "children")
   return (
     <div
-      class={cn("relative w-full shadow-xl rounded-lg bg-popover text-foreground p-6 grid gap-2", props.class)}
+      class={cn("relative w-full rounded-xl bg-popover text-foreground ring-1 ring-foreground/10 p-6 grid gap-2", props.class)}
       {...otherProps}
     >
       {props.children}
