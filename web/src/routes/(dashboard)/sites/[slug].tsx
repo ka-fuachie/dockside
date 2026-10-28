@@ -92,11 +92,11 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
               <div class="grid justify-items-start gap-1">
                 <PageBackLink href={paths.sites()}>Sites</PageBackLink>
                 <div class="flex items-center gap-2">
-                  <PageTitle class="text-4xl">{site().name}</PageTitle>
+                  <PageTitle class="text-3xl sm:text-4xl">{site().name}</PageTitle>
                   <SiteStatusBadge status={site().currentVersion == null ? null: site().up ? "up" : "down"} />
                 </div>
-                <PageDescription class="flex items-center gap-2">
-                  <span>/{site().slug}</span>
+                <PageDescription class="flex items-center gap-2 text-sm sm:text-base">
+                  <span class="sr-only sm:not-sr-only">/{site().slug}</span>
                   <span class="text-muted-foreground/75">Created <time datetime={site().createdAt}>{formatSmartDate(site().createdAt)}</time></span>
                 </PageDescription>
               </div>

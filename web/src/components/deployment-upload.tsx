@@ -177,8 +177,8 @@ export function DeploymentUpload(props: DeploymentUploadProps) {
             setDropzoneError(null)
           }}
         >
-          <div class="grid justify-items-center gap-2 px-4 py-8 text-muted-foreground">
-            <CloudUploadIcon />
+          <div class="grid justify-items-center gap-2 px-4 sm:px-8 py-8 sm:py-14 text-muted-foreground">
+            <CloudUploadIcon class="sm:size-8" />
             <p>Drop a folder, zip file, or a single HTML file here to deploy</p>
             <div class="text-sm">
               <span>Or </span>
