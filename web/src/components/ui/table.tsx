@@ -1,16 +1,33 @@
 "use client"
 
+import { createScrollIndicators } from "@/hooks/scroll-indicators"
 import { ComponentProps } from "@solidjs/web"
 import { cn } from "cn"
 import { omit } from "solid-js"
 
 function Table(props: ComponentProps<"table">) {
   const otherProps = omit(props, "class")
+  let tableWrapperRef: HTMLDivElement | null = null
+  const { canScrollLeft, canScrollRight, handleScroll } = createScrollIndicators(() => tableWrapperRef)
 
   return (
     <div
       data-slot="table-container"
-      class="relative w-full overflow-x-auto rounded-lg border border-border"
+      onScroll={handleScroll}
+      class={[
+        "relative w-full overflow-x-auto overscroll-x-none rounded-lg border border-border",
+        "[--edge-fade-size:1.5rem]",
+        canScrollLeft() && canScrollRight() && (
+          "mask-[linear-gradient(to_right,transparent,black_var(--edge-fade-size),black_calc(100%-var(--edge-fade-size)),transparent)]"
+        ),
+        !canScrollLeft() && canScrollRight() && (
+          "mask-[linear-gradient(to_right,black,black_calc(100%-var(--edge-fade-size)),transparent)]"
+        ),
+        canScrollLeft() && !canScrollRight() && (
+          "mask-[linear-gradient(to_right,transparent,black_var(--edge-fade-size),black)]"
+        ),
+      ]}
+      ref={node => tableWrapperRef = node}
     >
       <table
         data-slot="table"

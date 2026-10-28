@@ -3,13 +3,15 @@
 import { createContext, createProjection } from "solid-js"
 import { useContext } from "solid-js"
 import { JSX } from "@solidjs/web"
-import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
+import { FieldLegend, FieldSet } from "@/components/ui/field"
+import { ComponentProps } from "@solidjs/web"
 
 type ToggleGroupProps = {
   legend: string
   value: string
   onChange: (value: string) => void
   children: JSX.Element
+  class?: ComponentProps<"div">["class"]
 }
 
 type ToggleGroupItemProps = {
@@ -33,6 +35,7 @@ function ToggleGroup(props: ToggleGroupProps) {
 
   return (
     <FieldSet
+      class={props.class}
       onChange={ev => {
         const input = ev.target
         if (!(input instanceof HTMLInputElement)) return
@@ -41,7 +44,7 @@ function ToggleGroup(props: ToggleGroupProps) {
       }}
     >
       <FieldLegend class="sr-only">{props.legend}</FieldLegend>
-      <div class="flex border border-muted-foreground/30 rounded-md">
+      <div class={"flex border border-muted-foreground/30 rounded-md w-fit"}>
         <ToggleGroupContext value={context}>
           {props.children}
         </ToggleGroupContext>

@@ -128,60 +128,61 @@ export default function Sites(props: RouteProps<typeof route>) {
           <FieldSet>
             <FieldLegend class="sr-only">Sites filter</FieldLegend>
 
-            <FieldGroup class="flex flex-row justify-between">
-              <div class="flex gap-4">
-                <Field class="relative">
-                  <FieldLabel for="site-search" class="sr-only">Search site</FieldLabel>
-                  <div class="w-fit pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 px-2">
-                    <SearchIcon class="size-4 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="search"
-                    size="sm"
-                    id="site-search"
-                    class="pl-8"
-                    placeholder="Search"
-                    value={String(search.q ?? "")}
-                    onInput={ev => setSearch({ q: ev.currentTarget.value })}
-                  />
-                </Field>
+            <FieldGroup
+              class={[
+                "grid grid-cols-[auto_auto_1fr] sm:grid-cols-[auto_auto_1fr_auto] grid-rows-2 sm:grid-rows-1 items-center",
+                "[grid-template-areas:'search_search_search''status_view_.']",
+                "sm:[grid-template-areas:'search_status_._view']",
+              ]}
+            >
+              <Field class="[grid-area:search] relative h-fit">
+                <FieldLabel for="site-search" class="sr-only">Search site</FieldLabel>
+                <div class="w-fit pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 px-2">
+                  <SearchIcon class="size-4 text-muted-foreground" />
+                </div>
+                <Input
+                  type="search"
+                  size="sm"
+                  id="site-search"
+                  class="pl-8"
+                  placeholder="Search"
+                  value={String(search.q ?? "")}
+                  onInput={ev => setSearch({ q: ev.currentTarget.value })}
+                />
+              </Field>
 
-                <ToggleGroup
-                  legend="Site status"
-                  value={String(["all", "up", "down"].includes(search.status ?? "") ? search.status : "all")}
-                  onChange={value => setSearch({ status: value })}
-                >
-                  <ToggleGroupItem value="all">
-                    <span>All</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="up">
-                    <span>Up</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="down">
-                    <span>Down</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
+              <ToggleGroup
+              legend="Site status"
+              class="[grid-area:status]"
+                value={String(["all", "up", "down"].includes(search.status ?? "") ? search.status : "all")}
+                onChange={value => setSearch({ status: value })}
+              >
+                <ToggleGroupItem value="all">
+                  <span>All</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="up">
+                  <span>Up</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="down">
+                  <span>Down</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
 
-              <div>
-                <Field>
-                  <FieldLabel for="sites-view" class="sr-only">Sites view</FieldLabel>
-                  <ToggleGroup
-                    legend="Sites view"
-                    value={String(search.view == "grid" ? "grid": "list")}
-                    onChange={value => setSearch({view: value})}
-                  >
-                    <ToggleGroupItem value="list" title="List">
-                      <ListSortDescendingIcon />
-                      <span class="sr-only">List</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="grid" title="Grid">
-                      <LayoutGridIcon />
-                      <span class="sr-only">List</span>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </Field>
-              </div>
+              <ToggleGroup
+                legend="Sites view"
+                class="[grid-area:view]"
+                value={String(search.view == "grid" ? "grid": "list")}
+                onChange={value => setSearch({view: value})}
+              >
+                <ToggleGroupItem value="list" title="List">
+                  <ListSortDescendingIcon />
+                  <span class="sr-only">List</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="grid" title="Grid">
+                  <LayoutGridIcon />
+                  <span class="sr-only">List</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
             </FieldGroup>
           </FieldSet>
 
@@ -293,7 +294,7 @@ export default function Sites(props: RouteProps<typeof route>) {
                 </Match>
               </Switch>
 
-              <div class="flex items-center gap-8 justify-between text-muted-foreground">
+              <div class="flex items-center flex-wrap gap-4 sm:gap-8 justify-between text-muted-foreground">
                 <p class="text-sm">Showing page {sites().number + 1} of {sites().totalPages}</p>
                 <div class="flex items-center gap-1">
                   <Button variant="outlined" size="xs" disabled={sites().number === 0}>

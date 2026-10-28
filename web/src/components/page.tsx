@@ -8,10 +8,9 @@ import { cn } from "cn";
 export function PageBody(props: { children: JSX.Element }) {
   return (
     <div
-      class="px-(--body-padding-inline) py-12 grid gap-8"
+      class="[--body-min-padding-inline:1rem] sm:[--body-min-padding-inline:2rem] px-(--body-padding-inline) py-12 grid gap-6 sm:gap-8"
       style={{
         "--body-max-width": "60rem",
-        "--body-min-padding-inline": "2rem",
         "--body-padding-inline": "max(calc((100vw - var(--body-max-width))/2), var(--body-min-padding-inline))"
       }}
     >{props.children}</div>
@@ -44,7 +43,7 @@ export function PageBackLink(props: ComponentProps<"a">) {
 export function PageTitle(props: ComponentProps<"h2">) {
   const otherProps = omit(props, "class", "children")
   return (
-    <h2 class={cn("text-5xl", props.class)} {...otherProps}>{props.children}</h2>
+    <h2 class={cn("text-4xl sm:text-5xl", props.class)} {...otherProps}>{props.children}</h2>
   )
 }
 
@@ -64,7 +63,7 @@ export function PageHeaderActions(props: { children: JSX.Element }) {
 export function PageContent(props: ComponentProps<"div">) {
   const otherProps = omit(props, "class", "children")
   return (
-    <div class={cn("grid gap-12", props.class)} {...otherProps}>{props.children}</div>
+    <div class={cn("grid gap-8 sm:gap-12", props.class)} {...otherProps}>{props.children}</div>
   )
 }
 

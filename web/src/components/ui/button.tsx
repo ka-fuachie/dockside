@@ -5,7 +5,7 @@ import { omit } from "solid-js"
 import { merge } from "solid-js"
 
 const buttonVariants = cva(
-  "cursor-pointer flex justify-center items-center gap-2 bg-primary text-foreground rounded-full px-4 py-4 font-medium active:scale-99 disabled:opacity-50 disabled:cursor-not-allowed group-aria-busy:opacity-50 group-aria-busy:pointer-events-none group-aria-busy:cursor-not-allowed",
+  "cursor-pointer flex justify-center items-center shrink-0 gap-2 bg-primary text-foreground rounded-full px-4 py-4 font-medium active:scale-99 disabled:opacity-50 disabled:cursor-not-allowed group-aria-busy:opacity-50 group-aria-busy:pointer-events-none group-aria-busy:cursor-not-allowed",
   {
     variants: {
       variant: {
