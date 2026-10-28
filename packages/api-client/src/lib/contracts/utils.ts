@@ -71,6 +71,7 @@ export const SiteSchema = z.object({
     .object({
       version: z.number(),
       status: z.lazy(() => DeploymentStatusSchema),
+      createdAt: z.string(),
     })
     .nullable()
     .optional(),

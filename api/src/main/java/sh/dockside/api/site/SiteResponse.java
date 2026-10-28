@@ -17,7 +17,7 @@ public record SiteResponse(
   String createdByUsername,
   Latest latestDeployment
 ) {
-  public record Latest(Integer version, DeploymentStatus status) {}
+  public record Latest(Integer version, DeploymentStatus status, Instant createdAt) {}
 
   public static SiteResponse from(Site s) {
     return from(s, null, null);
@@ -37,7 +37,7 @@ public record SiteResponse(
       h == null ? null : h.getUp(),
       h == null ? null : h.getCheckedAt(),
       s.getCreatedBy() != null ? s.getCreatedBy().getUsername(): null,
-      latest == null ? null : new Latest(latest.getVersion(), latest.getStatus())
+      latest == null ? null : new Latest(latest.getVersion(), latest.getStatus(), latest.getCreatedAt())
     );
   }
 }
