@@ -201,3 +201,10 @@
     }
   }
 }
+
+@layer utilities {
+  .no-transitions,
+  .no-transitions * {
+    transition: none !important;
+  }
+}

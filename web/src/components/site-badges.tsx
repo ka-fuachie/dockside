@@ -2,10 +2,17 @@ import { Badge } from "@/components/ui/badge"
 import { DotIcon, LoaderCircleIcon } from "@lucide/solid"
 import { Match, Switch } from "solid-js"
 
+const StatusStyles = {
+  green: "text-green-600 dark:text-green-500 bg-green-300/25 dark:bg-green-500/25",
+  yellow: "text-amber-500 dark:text-amber-500 bg-amber-300/25 dark:bg-amber-500/25",
+  red: "text-red-600 dark:text-red-500 bg-red-300/25 dark:bg-red-700/20",
+  gray: "text-muted-foreground/75 bg-muted/90"
+}
+
 const SiteStatusBadgeStyles = {
-  up: "text-green-500 bg-green-500/25",
-  down: "text-red-500 bg-red-200/25",
-  default: "text-muted-foreground bg-muted/50",
+  up: StatusStyles.green,
+  down: StatusStyles.red,
+  default: StatusStyles.gray,
 }
 
 const SiteStatusBadgeText = {
@@ -24,9 +31,9 @@ export function SiteStatusBadge(props: { status?: "up" | "down" | null }) {
 }
 
 const DeploymentStatusBadgeStyle = {
-  running: "text-amber-500 bg-amber-500/25",
-  success: "text-green-500 bg-green-500/25",
-  failed: "text-red-500 bg-red-200/25",
+  running: StatusStyles.yellow,
+  success: StatusStyles.green,
+  failed: StatusStyles.red,
 }
 
 const DeploymentStatusBadgeText = {

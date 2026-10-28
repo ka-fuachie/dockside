@@ -72,7 +72,7 @@ export function DialogModal(props: ComponentProps<"dialog">) {
   return (
     <dialog
       id={dialogModalId()}
-      class={cn("w-full h-full max-w-screen max-h-screen m-0 focus:outline-none bg-transparent backdrop:bg-background/25 backdrop:backdrop-blur-xs py-12 px-(--dialog-body-padding-inline) open:grid open:items-center", props.class)}
+      class={cn("w-full h-full max-w-screen max-h-screen m-0 focus:outline-none bg-transparent backdrop:bg-black/25 backdrop:backdrop-blur-xs py-12 px-(--dialog-body-padding-inline) open:grid open:items-center", props.class)}
       style={{
         "--dialog-body-max-width": "30rem",
         "--dialog-body-min-padding-inline": "1rem",
