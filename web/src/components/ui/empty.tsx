@@ -64,7 +64,7 @@ function EmptyTitle(props: ComponentProps<"div">) {
     <div
       data-slot="empty-title"
       class={cn(
-        "cn-font-heading text-sm font-medium tracking-tight",
+        "cn-font-heading font-medium tracking-tight",
         props.class
       )}
       {...otherProps}
@@ -78,7 +78,7 @@ function EmptyDescription(props: ComponentProps<"p">) {
     <div
       data-slot="empty-description"
       class={cn(
-        "text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+        "text-base/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         props.class
       )}
       {...otherProps}
@@ -92,7 +92,7 @@ function EmptyContent(props: ComponentProps<"div">) {
     <div
       data-slot="empty-content"
       class={cn(
-        "flex w-full max-w-sm min-w-0 flex-col items-center gap-2.5 text-sm text-balance",
+        "flex w-full max-w-sm min-w-0 flex-col items-center gap-2.5 text-balance",
         props.class
       )}
       {...otherProps}

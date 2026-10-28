@@ -7,7 +7,7 @@ import { Title } from "@solidjs/meta"
 import { paths } from "@/router"
 import { PageBackLink, PageBody, PageContent, PageDescription, PageHeader, PageHeaderActions, PageSection, PageSectionTitle, PageTitle } from "@/components/page"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { ExternalLinkIcon } from "@lucide/solid"
+import { AlertCircleIcon, ExternalLinkIcon, RocketIcon } from "@lucide/solid"
 import { cn } from "cn"
 import { DeploymentStatus, SiteStatusBadge } from "@/components/site-badges"
 import { formatAbsoluteDate, formatSmartDate } from "@/lib/date"
@@ -16,6 +16,9 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { DeploymentUpload } from "@/components/deployment-upload"
 import { useSubmissionsError } from "@/lib/form"
 import { Dialog, DialogBody, DialogHeader, DialogModal, DialogTrigger } from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Repeat } from "solid-js"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const deployAction = action(deploy)
@@ -26,8 +29,7 @@ function DeploymentUploadForm(props: { siteId: number }) {
   const { errorMessage, issues, clearErrors } = useSubmissionsError(submissions)
   const [isSubmitting, setIsubmitting] = createOptimistic(false)
 
-  deployAction.onSubmit((_, form) => {
-    console.log([...form.entries()])
+  deployAction.onSubmit(() => {
     setIsubmitting(true)
   })
 
@@ -53,6 +55,83 @@ function DeploymentUploadForm(props: { siteId: number }) {
   )
 }
 
+function SiteHeaderSkeleton() {
+  return (
+    <PageHeader>
+      <div class="grid justify-items-start gap-1">
+        <Skeleton class="h-4 w-16" />
+        <div class="flex items-center gap-2">
+          <Skeleton class="h-10 w-40 sm:w-64" />
+          <Skeleton class="h-6 w-14 rounded-full" />
+        </div>
+        <div class="flex items-center gap-2">
+          <Skeleton class="h-4 w-24" />
+          <Skeleton class="h-4 w-32 hidden sm:block" />
+        </div>
+      </div>
+      <PageHeaderActions>
+        <Skeleton class="h-8 w-24 rounded-full" />
+      </PageHeaderActions>
+    </PageHeader>
+  )
+}
+
+function DeploymentsTableSkeleton(props: { num: number }) {
+  return (
+    <Table>
+      <TableCaption class="sr-only">Loading deployments</TableCaption>
+      <TableHeader>
+        <TableRow header>
+          <TableHead>Version</TableHead>
+          <TableHead>Result</TableHead>
+          <TableHead>Deployed At</TableHead>
+          <TableHead>Deployed By</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <Repeat count={props.num}>
+          {() => (
+            <TableRow class="hover:bg-transparent!">
+              <TableCell>
+                <Skeleton class="h-4 w-10" />
+              </TableCell>
+              <TableCell>
+                <Skeleton class="h-6 w-16 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton class="h-4 w-28" />
+              </TableCell>
+              <TableCell>
+                <Skeleton class="h-4 w-24" />
+              </TableCell>
+              <TableCell class="w-fit">
+                <Skeleton class="h-6 w-16 rounded-full" />
+              </TableCell>
+            </TableRow>
+          )}
+        </Repeat>
+      </TableBody>
+    </Table>
+  )
+}
+
+function NoDeploymentsFallback() {
+  return (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <RocketIcon />
+        </EmptyMedia>
+        <EmptyTitle>No deployments yet</EmptyTitle>
+        <EmptyDescription>
+          Upload your first build using the form below to deploy this site.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+}
+
 export const route = defineFileRoute("/sites/:slug", {
   preload({ params }) {
     getSite(params.slug)
@@ -65,129 +144,156 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
   const siteUrl = createMemo(() => getSiteUrl(props.params.slug))
 
   return (
-    <>
-      <Title>{site().name} - Dockside</Title>
+    <PageBody>
+      <Errored
+        fallback={(err, reset) => (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <AlertCircleIcon />
+              </EmptyMedia>
+              <EmptyTitle>Failed to load site</EmptyTitle>
+              <EmptyDescription>
+                {(err() as Error)?.message ?? "Something went wrong"}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button size="sm" variant="tonal" onClick={reset}>
+                Try again
+              </Button>
+            </EmptyContent>
+          </Empty>
 
-      <PageBody>
-        <Errored
-          fallback={(err, reset) => (
+        )}
+      >
+        <Loading
+          fallback={
             <>
-              <p>Error loading site</p>
-              <p>{(err() as Error)?.message}</p>
-              <button type="button" onClick={reset}>Retry</button>
+              <SiteHeaderSkeleton />
+              <PageContent>
+                <PageSection>
+                  <PageSectionTitle>Deployments</PageSectionTitle>
+                  <DeploymentsTableSkeleton num={3} />
+                </PageSection>
+                <PageSection>
+                  <PageSectionTitle class="sr-only">New deployment</PageSectionTitle>
+                  <Skeleton class="h-40 w-full rounded-lg" />
+                </PageSection>
+              </PageContent>
             </>
-          )}
+          }
         >
-          <Loading
-            fallback={
-              <>
-                <PageHeader>
-                  <PageBackLink href={paths.sites()}>Sites</PageBackLink>
-                </PageHeader>
-                <p>Loading site...</p>
-              </>
-            }
-          >
-            <PageHeader>
-              <div class="grid justify-items-start gap-1">
-                <PageBackLink href={paths.sites()}>Sites</PageBackLink>
-                <div class="flex items-center gap-2">
-                  <PageTitle class="text-3xl sm:text-4xl">{site().name}</PageTitle>
-                  <SiteStatusBadge status={site().currentVersion == null ? null: site().up ? "up" : "down"} />
-                </div>
-                <PageDescription class="flex items-center gap-2 text-sm sm:text-base">
-                  <span class="sr-only sm:not-sr-only">/{site().slug}</span>
-                  <span class="text-muted-foreground/75">Created <time datetime={site().createdAt}>{formatSmartDate(site().createdAt)}</time></span>
-                </PageDescription>
+          <Title>{site().name} - Dockside</Title>
+
+          <PageHeader>
+            <div class="grid justify-items-start gap-1">
+              <PageBackLink href={paths.sites()}>Sites</PageBackLink>
+              <div class="flex items-center gap-2">
+                <PageTitle class="text-3xl sm:text-4xl">{site().name}</PageTitle>
+                <SiteStatusBadge status={site().currentVersion == null ? null: site().up ? "up" : "down"} />
               </div>
+              <PageDescription class="flex items-center gap-2 text-sm sm:text-base">
+                <span class="sr-only sm:not-sr-only">/{site().slug}</span>
+                <span class="text-muted-foreground/75">Created <time datetime={site().createdAt}>{formatSmartDate(site().createdAt)}</time></span>
+              </PageDescription>
+            </div>
 
-              <PageHeaderActions>
-                <Loading>
-                  <a href={siteUrl()} target="_blank" class={cn(buttonVariants({ size: "sm" }))}>
-                    <ExternalLinkIcon />
-                    <span>Visit site</span>
-                  </a>
-                </Loading>
-              </PageHeaderActions>
-            </PageHeader>
+            <PageHeaderActions>
+              <Loading>
+                <a href={siteUrl()} target="_blank" class={cn(buttonVariants({ size: "sm" }))}>
+                  <ExternalLinkIcon />
+                  <span>Visit site</span>
+                </a>
+              </Loading>
+            </PageHeaderActions>
+          </PageHeader>
 
-            <PageContent>
-              {/* TODO: Monitoring charts */}
-              {/*<PageSection>
-                <PageSectionTitle class="sr-only">Monitoring</PageSectionTitle>
-                <div class="grid grid-cols-2 gap-6 text-left">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Latency</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p>
-                        <span class="text-3xl">84</span>
-                        <span class="text-sm text-muted-foreground"> ms average</span>
-                      </p>
-                    </CardContent>
-                  </Card>
+          <PageContent>
+            {/* TODO: Monitoring charts */}
+            {/*<PageSection>
+              <PageSectionTitle class="sr-only">Monitoring</PageSectionTitle>
+              <div class="grid grid-cols-2 gap-6 text-left">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Latency</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p>
+                      <span class="text-3xl">84</span>
+                      <span class="text-sm text-muted-foreground"> ms average</span>
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Availability</CardTitle>
-                    </CardHeader>
-                    <CardContent></CardContent>
-                  </Card>
-                </div>
-              </PageSection>*/}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Availability</CardTitle>
+                  </CardHeader>
+                  <CardContent></CardContent>
+                </Card>
+              </div>
+            </PageSection>*/}
 
-              <PageSection>
-                <PageSectionTitle>Deployments</PageSectionTitle>
+            <PageSection>
+              <PageSectionTitle>Deployments</PageSectionTitle>
 
-                <Table>
-                  <TableCaption class="sr-only">Deployments list</TableCaption>
-                  <TableHeader>
-                    <TableRow header>
-                      <TableHead>Version</TableHead>
-                      <TableHead>Result</TableHead>
-                      <TableHead>Deployed At</TableHead>
-                      <TableHead>Deployed By</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <For each={deployments().content} keyed={item => item.id}>
-                      {(item) => (
-                        <TableRow>
-                          <TableCell>v{item().version}</TableCell>
-                          <TableCell>
-                            <DeploymentStatus status={item().status} />
-                          </TableCell>
-                          <TableCell>
-                            <time datetime={item().createdAt} class="text-muted-foreground">{formatAbsoluteDate(item().createdAt)}</time>
-                          </TableCell>
-                          <TableCell>{item().createdByUsername ?? "-"}</TableCell>
-                          <TableCell class="w-fit">
-                            <Switch>
-                              <Match when={ item().status === "success" && site().currentVersion !== item().version}>
-                                <Button variant="tonal" size="xs">Rollback</Button>
-                              </Match>
-                              {/*<Match when={item().status === "failed"}>
-                                <Button variant="tonal" size="xs">View logs</Button>
-                              </Match>*/}
-                            </Switch>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </For>
-                  </TableBody>
-                </Table>
-              </PageSection>
+              <Table>
+                <TableCaption class="sr-only">Deployments list</TableCaption>
+                <TableHeader>
+                  <TableRow header>
+                    <TableHead>Version</TableHead>
+                    <TableHead>Result</TableHead>
+                    <TableHead>Deployed At</TableHead>
+                    <TableHead>Deployed By</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <For
+                    each={deployments().content}
+                    keyed={item => item.id}
+                    fallback={
+                      <TableRow class="hover:bg-transparent!">
+                        <TableCell colspan={5}>
+                          <NoDeploymentsFallback />
+                        </TableCell>
+                      </TableRow>
+                    }
+                  >
+                    {(item) => (
+                      <TableRow>
+                        <TableCell>v{item().version}</TableCell>
+                        <TableCell>
+                          <DeploymentStatus status={item().status} />
+                        </TableCell>
+                        <TableCell>
+                          <time datetime={item().createdAt} class="text-muted-foreground">{formatAbsoluteDate(item().createdAt)}</time>
+                        </TableCell>
+                        <TableCell>{item().createdByUsername ?? "-"}</TableCell>
+                        <TableCell class="w-fit">
+                          <Switch>
+                            <Match when={ item().status === "success" && site().currentVersion !== item().version}>
+                              <Button variant="tonal" size="xs">Rollback</Button>
+                            </Match>
+                            {/*<Match when={item().status === "failed"}>
+                              <Button variant="tonal" size="xs">View logs</Button>
+                            </Match>*/}
+                          </Switch>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </For>
+                </TableBody>
+              </Table>
+            </PageSection>
 
-              <PageSection>
-                <PageSectionTitle class="sr-only">New deployment</PageSectionTitle>
-                <DeploymentUploadForm siteId={site().id} />
-              </PageSection>
-            </PageContent>
-          </Loading>
-        </Errored>
-      </PageBody>
-    </>
+            <PageSection>
+              <PageSectionTitle class="sr-only">New deployment</PageSectionTitle>
+              <DeploymentUploadForm siteId={site().id} />
+            </PageSection>
+          </PageContent>
+        </Loading>
+      </Errored>
+    </PageBody>
   )
 }
