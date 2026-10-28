@@ -341,17 +341,21 @@ export default function Sites(_props: RouteProps<typeof route>) {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell class="text-muted-foreground">
                               <time datetime={item().createdAt}>{formatSmartDate(item().createdAt)}</time>
                             </TableCell>
                             <TableCell>
-                              <div class="grid gap-1">
-                                <p class="flex items-center gap-1">
-                                  <span>v12</span>
-                                  <DeploymentStatus status="running" />
-                                </p>
-                                <time datetime={new Date().toISOString()} class="text-xs text-muted-foreground">{formatAbsoluteDate(new Date().toISOString())}</time>
-                              </div>
+                              <Show when={item().latestDeployment} fallback={<span>-</span>}>
+                                {(d) => (
+                                  <div class="grid gap-1">
+                                    <p class="flex items-center gap-1">
+                                      <span>v{d().version}</span>
+                                      {d().status !== "success" && <DeploymentStatus status={d().status} />}
+                                    </p>
+                                    <time datetime={d().createdAt} class="text-xs text-muted-foreground">{formatAbsoluteDate(d().createdAt)}</time>
+                                  </div>
+                                )}
+                              </Show>
                             </TableCell>
                             <TableCell>{item().currentVersion != null ? `v${item().currentVersion}`: "-"}</TableCell>
                             <TableCell>
@@ -391,10 +395,14 @@ export default function Sites(_props: RouteProps<typeof route>) {
 
                             <div class="flex items-center justify-between">
                               <span class="text-muted-foreground">Latest version</span>
-                              <div class="flex items-center gap-2">
-                                <span>v12</span>
-                                <DeploymentStatus status="running" />
-                              </div>
+                              <Show when={item().latestDeployment} fallback={<span>-</span>}>
+                                {(d) => (
+                                  <div class="flex items-center gap-2">
+                                    <span>v{d().version}</span>
+                                    {d().status !== "success" && <DeploymentStatus status={d().status} />}
+                                  </div>
+                                )}
+                              </Show>
                             </div>
                           </CardContent>
                           <CardFooter>

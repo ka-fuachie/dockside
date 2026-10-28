@@ -9,7 +9,7 @@ import { PageBackLink, PageBody, PageContent, PageDescription, PageHeader, PageH
 import { Button, buttonVariants } from "@/components/ui/button"
 import { AlertCircleIcon, ExternalLinkIcon, RocketIcon } from "@lucide/solid"
 import { cn } from "cn"
-import { DeploymentStatus, SiteStatusBadge } from "@/components/site-badges"
+import { DeploymentStatus, SiteStatusBadge, StatusStyles } from "@/components/site-badges"
 import { formatAbsoluteDate, formatSmartDate } from "@/lib/date"
 import { deploy, listDeployments } from "@/data/deployments"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -19,6 +19,7 @@ import { Dialog, DialogBody, DialogHeader, DialogModal, DialogTrigger } from "@/
 import { Skeleton } from "@/components/ui/skeleton"
 import { Repeat } from "solid-js"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Badge } from "@/components/ui/badge"
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const deployAction = action(deploy)
@@ -262,7 +263,14 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
                   >
                     {(item) => (
                       <TableRow>
-                        <TableCell>v{item().version}</TableCell>
+                        <TableCell>
+                          <p class="flex items-center gap-1">
+                            <span>v{item().version}</span>
+                            {item().version === site().currentVersion && (
+                              <Badge class={cn(StatusStyles.green, "text-xs")}>Current</Badge>
+                            )}
+                          </p>
+                        </TableCell>
                         <TableCell>
                           <DeploymentStatus status={item().status} />
                         </TableCell>

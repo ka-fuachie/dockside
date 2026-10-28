@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge"
 import { DotIcon, LoaderCircleIcon } from "@lucide/solid"
 import { Match, Switch } from "solid-js"
 
-const StatusStyles = {
+export const StatusStyles = {
   green: "text-green-600 dark:text-green-500 bg-green-300/25 dark:bg-green-500/25",
   yellow: "text-amber-500 dark:text-amber-500 bg-amber-300/25 dark:bg-amber-500/25",
   red: "text-red-600 dark:text-red-500 bg-red-300/25 dark:bg-red-700/20",
