@@ -61,7 +61,39 @@ public class SiteController {
     var query = q == null || q.isBlank() ? null : q.toLowerCase();
     var page = pageable.getSort().isSorted() ? pageable
       : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "id"));
-    return sites.search(query, up, page).map(this::withHealth);
+    return sites.findAll(filter(query, up), page).map(this::withHealth);
+  }
+
+  private org.springframework.data.jpa.domain.Specification<Site> filter(String query, Boolean up) {
+    org.springframework.data.jpa.domain.Specification<Site> spec = null;
+    if (query != null) {
+      org.springframework.data.jpa.domain.Specification<Site> qSpec = (root, cq, cb) -> cb.or(
+        cb.like(cb.lower(root.get("slug")), "%" + query + "%"),
+        cb.like(cb.lower(root.get("name")), "%" + query + "%"));
+      spec = qSpec;
+    }
+    if (up != null) {
+      org.springframework.data.jpa.domain.Specification<Site> statusSpec = (root, cq, cb) -> {
+        var latestAt = cq.subquery(java.time.Instant.class);
+        var h2 = latestAt.from(sh.dockside.api.health.HealthCheck.class);
+        latestAt.select(cb.greatest(h2.<java.time.Instant>get("checkedAt")));
+        latestAt.where(cb.equal(h2.get("site").get("id"), root.get("id")));
+
+        var latestIsUp = cq.subquery(Boolean.class);
+        var lh = latestIsUp.from(sh.dockside.api.health.HealthCheck.class);
+        latestIsUp.select(lh.get("up"));
+        latestIsUp.where(
+          cb.equal(lh.get("site").get("id"), root.get("id")),
+          cb.equal(lh.get("checkedAt"), latestAt),
+          cb.equal(lh.get("up"), true));
+
+        return Boolean.TRUE.equals(up)
+          ? cb.exists(latestIsUp)
+          : cb.not(cb.exists(latestIsUp));
+      };
+      spec = spec == null ? statusSpec : spec.and(statusSpec);
+    }
+    return spec;
   }
 
   private Boolean parseStatus(String value) {
