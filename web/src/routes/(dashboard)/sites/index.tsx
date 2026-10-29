@@ -1,8 +1,9 @@
 import { defineFileRoute } from "@solidjs/router/fs"
 import { createSite, getSitesList } from "@/data/sites"
 import { createMemo, Errored, For, Loading, Show } from "solid-js"
+import { JSX } from "@solidjs/web/jsx-runtime"
 import { Title } from "@solidjs/meta"
-import { action, RouteProps, SearchParams, useSearchParams, useSubmissions } from "@solidjs/router"
+import { action, RouteProps, SearchParams, useLocation, useNavigate, useSearchParams, useSubmissions } from "@solidjs/router"
 import { Button } from "@/components/ui/button"
 import { AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon, GlobeIcon, LayoutGridIcon, ListSortDescendingIcon, PlusIcon, SearchIcon } from "@lucide/solid"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
@@ -218,14 +219,31 @@ function NoSitesFallback(props: { filtersEngaged: boolean; isAdmin: boolean }) {
 }
 
 function sitesListParams(search: SearchParams) {
-  // Keys with explicit `undefined` values make the args "not JSON-safe" for
-  // the server-functions transport (isJSONSafe rejects non-object owns);
-  // only assign keys we actually want.
   const params: { q?: string; status?: "up" | "down" } = {};
   const q = typeof search.q == "string" ? search.q.trim() : undefined;
   if (q) params.q = q;
   if (search.status === "up" || search.status === "down") params.status = search.status;
   return params;
+}
+
+function SiteDetailLink(props: { slug: string; class?: string; children: JSX.Element }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  return (
+    <a
+      href={paths.sites(props.slug)}
+      class={props.class}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        navigate(paths.sites(props.slug), {
+          state: { previous: location.pathname + location.search },
+        });
+      }}
+    >
+      {props.children}
+    </a>
+  )
 }
 
 export const route = defineFileRoute("/sites", {
@@ -399,11 +417,11 @@ export default function Sites(_props: RouteProps<typeof route>) {
                               <SiteStatusBadge status={item().currentVersion == null ? null: item().up ? "up" : "down"} />
                             </TableCell>
                             <TableCell>
-                              <a href={paths.sites(item().slug)} class="block w-fit">
+                              <SiteDetailLink slug={item().slug} class="block w-fit">
                                 <ChevronRightIcon class="size-5 text-muted-foreground" />
                                 <span class="sr-only">View details</span>
                                 <div class="absolute inset-0" />
-                              </a>
+                              </SiteDetailLink>
                             </TableCell>
                           </TableRow>
                         )}
@@ -445,11 +463,11 @@ export default function Sites(_props: RouteProps<typeof route>) {
                           <CardFooter>
                             <div class="flex items-center justify-between w-full">
                               <span class="text-muted-foreground">Current {item().currentVersion ? `v${item().currentVersion}` : "-"}</span>
-                              <a href={paths.sites(item().slug)} class="cursor-pointer group">
+                              <SiteDetailLink slug={item().slug} class="cursor-pointer group">
                                 <ChevronRightIcon class="size-5 text-muted-foreground" />
                                 <span class="sr-only">View details</span>
                                 <div class="absolute inset-0 group-hover:bg-muted/25" />
-                              </a>
+                              </SiteDetailLink>
                             </div>
                           </CardFooter>
                         </Card>

@@ -1,6 +1,6 @@
 import { defineFileRoute } from "@solidjs/router/fs"
 import { getSite, getSiteUrl } from "@/data/sites"
-import { action, RouteProps, useSubmissions } from "@solidjs/router"
+import { action, RouteProps, useLocation, useSubmissions } from "@solidjs/router"
 import { createMemo, createOptimistic, Errored, flush, For, Match, Switch } from "solid-js"
 import { Loading } from "solid-js"
 import { Title } from "@solidjs/meta"
@@ -140,6 +140,7 @@ export const route = defineFileRoute("/sites/:slug", {
 })
 
 export default function SiteDetail(props: RouteProps<typeof route>) {
+  const location = useLocation();
   const site = createMemo(() => getSite(props.params.slug));
   const deployments = createMemo(() => listDeployments(site().id))
   const siteUrl = createMemo(() => getSiteUrl(props.params.slug))
@@ -188,7 +189,9 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
 
           <PageHeader>
             <div class="grid justify-items-start gap-1">
-              <PageBackLink href={paths.sites()}>Sites</PageBackLink>
+              <PageBackLink
+                href={(location.state as { previous?: string } | null)?.previous ?? paths.sites()}
+              >Sites</PageBackLink>
               <div class="flex items-center gap-2">
                 <PageTitle class="text-3xl sm:text-4xl">{site().name}</PageTitle>
                 <SiteStatusBadge status={site().currentVersion == null ? null: site().up ? "up" : "down"} />
