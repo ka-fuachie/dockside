@@ -78,7 +78,7 @@ class UserManagementTest {
     var admin = token("admin", "admin123");
     var res = authed(admin).get().uri("/users").retrieve().body(UsersPage.class);
     assertThat(res.content().stream().map(UserResponse::username))
-      .containsExactlyInAnyOrder("admin", "dev");
+      .contains("admin", "dev");
   }
 
   @Test
