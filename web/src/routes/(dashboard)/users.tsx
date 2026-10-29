@@ -30,6 +30,14 @@ function AddUserAction() {
   const submissions = useSubmissions(createUserAction)
   const { errorMessage, issues, clearErrors } = useSubmissionsError(submissions)
   let formRef: HTMLFormElement | null = null
+  let dialogRef: HTMLDialogElement | null = null
+
+  createUserAction.onSettled((submission) => {
+    if (submission.error) return
+    clearErrors()
+    formRef?.reset()
+    dialogRef?.close()
+  })
 
   return (
     <Dialog>
@@ -39,6 +47,7 @@ function AddUserAction() {
       </DialogTrigger>
 
       <DialogModal
+        ref={node => dialogRef = node}
         onClose={() => {
           clearErrors()
           formRef?.reset()
@@ -181,9 +190,15 @@ function ConfirmDeleteUserDialog(props: { target: UserDeleteTarget | null, onCan
   const { errorMessage, clearErrors } = useSubmissionsError(submissions)
   const [isDeleting, setIsDeleting] = createOptimistic(false)
 
-  deleteUserAction.onSubmit(() => {
-    setIsDeleting(true)
-  })
+  deleteUserAction
+    .onSubmit(() => {
+      setIsDeleting(true)
+    })
+    .onSettled((submission) => {
+      if (submission.error) return
+      clearErrors()
+      props.onCancel()
+    })
 
   return (
     <Dialog open={props.target != null}>

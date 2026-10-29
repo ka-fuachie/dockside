@@ -1,4 +1,4 @@
-import { ComponentProps } from "@solidjs/web"
+import { ComponentProps, JSX } from "@solidjs/web"
 import { Accessor, createContext, createEffect, createSignal, createUniqueId, omit, onSettled, ParentProps, Setter, useContext } from "solid-js"
 import { Button } from "@/components/ui/button"
 import { merge } from "solid-js"
@@ -71,9 +71,19 @@ export function DialogTrigger(props: ComponentProps<typeof Button>) {
   )
 }
 
+function resolveRef<T extends HTMLElement>(node: T, ref: JSX.Ref<T> | null) {
+  if (ref == null) return
+  if (typeof ref === "function") ref(node)
+  if (Array.isArray(ref)) {
+    for (const r of ref) {
+      resolveRef(node, r)
+    }
+  }
+}
+
 export function DialogModal(props: ComponentProps<"dialog">) {
   const { dialogModalId, setDialogModalIdSource } = useContext(DialogContext)
-  const otherProps = omit(props, "id", "class", "children", "onClick", "onCancel")
+  const otherProps = omit(props, "id", "class", "children", "onClick", "onCancel", "ref")
   let dialogModalRef: HTMLDialogElement | null = null
 
   onSettled(() => {
@@ -92,7 +102,10 @@ export function DialogModal(props: ComponentProps<"dialog">) {
         "--dialog-body-min-padding-inline": "1rem",
         "--dialog-body-padding-inline": "max(calc((100vw - var(--dialog-body-max-width))/2), var(--dialog-body-min-padding-inline))",
       }}
-      ref={node => dialogModalRef = node}
+      ref={node => {
+        dialogModalRef = node
+        resolveRef(node, props.ref)
+      }}
       onClick={(ev) => {
         try {
           if (dialogModalRef != null && ev.target === dialogModalRef) {

@@ -4,8 +4,8 @@
        - strokeWidth 3 from Tailwind stroke-3
        - currentColor and the primary token joined to #1d6fe0
          (oklch 0.5599 0.1886 258.2462, identical in light and dark themes) -->
-  <circle cx="32" cy="12" r="5" stroke="#fefefe" fill="none" stroke-width="3" />
-  <path d="M32 17v37M23 26h18" stroke="#fefefe" fill="none" stroke-width="3" />
-  <path d="M10 34v4c0 10 9 16 22 16s22-6 22-16v-4" stroke="#1d6fe0" fill="none" stroke-width="3" />
+  <circle cx="32" cy="12" r="5" stroke="#fefefe" fill="none" stroke-width="5" />
+  <path d="M32 17v37M23 26h18" stroke="#fefefe" fill="none" stroke-width="5" />
+  <path d="M10 34v4c0 10 9 16 22 16s22-6 22-16v-4" stroke="#1d6fe0" fill="none" stroke-width="5" />
   <path d="M10 28l-6.5 9h13zM54 28l-6.5 9h13z" fill="#1d6fe0" />
 </svg>
