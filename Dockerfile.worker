@@ -5,6 +5,7 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
 COPY packages/api-client/package.json packages/api-client/
 COPY packages/deployment-config/package.json packages/deployment-config/
 COPY worker/package.json worker/
+COPY patches patches/
 RUN pnpm install --frozen-lockfile
 COPY packages/api-client packages/api-client
 COPY packages/deployment-config packages/deployment-config
