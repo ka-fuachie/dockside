@@ -42,6 +42,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> generic(Exception ex) {
+    org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class)
+      .error("unhandled endpoint error", ex);
     return ResponseEntity.internalServerError()
       .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "unexpected error", null));
   }

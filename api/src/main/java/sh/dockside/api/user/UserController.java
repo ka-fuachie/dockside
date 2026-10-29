@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,15 +41,35 @@ public class UserController {
   }
 
   @GetMapping
-  public Page<UserResponse> list(Pageable pageable) {
-    Page<User> page;
-    if (pageable.getSort().isSorted()) {
-      page = users.findAll(pageable);
-    } else {
-      page = users.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-        Sort.by(Sort.Direction.ASC, "id")));
+  public Page<UserResponse> list(
+    @RequestParam(required = false) String q,
+    @RequestParam(required = false) String role,
+    Pageable pageable
+  ) {
+    var roleFilter = role == null ? null : parseRole(role);
+    var query = q == null || q.isBlank() ? null : q.toLowerCase();
+    var page = pageable.getSort().isSorted() ? pageable
+      : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.ASC, "id"));
+    org.springframework.data.jpa.domain.Specification<User> spec = null;
+    if (query != null) {
+      org.springframework.data.jpa.domain.Specification<User> qSpec =
+        (root, cq, cb) -> cb.like(cb.lower(root.get("username")), "%" + query + "%");
+      spec = qSpec;
     }
-    return page.map(UserResponse::from);
+    if (roleFilter != null) {
+      org.springframework.data.jpa.domain.Specification<User> roleSpec =
+        (root, cq, cb) -> cb.equal(root.get("role"), roleFilter);
+      spec = spec == null ? roleSpec : spec.and(roleSpec);
+    }
+    return users.findAll(spec, page).map(UserResponse::from);
+  }
+
+  private Role parseRole(String value) {
+    try {
+      return Role.valueOf(value.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "bad role");
+    }
   }
 
   @PostMapping
