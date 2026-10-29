@@ -1,7 +1,7 @@
 import { defineFileRoute } from "@solidjs/router/fs"
 import { getSite, getSiteUrl } from "@/data/sites"
-import { action, RouteProps, useLocation, useSubmissions } from "@solidjs/router"
-import { createMemo, createOptimistic, Errored, flush, For, Match, Switch } from "solid-js"
+import { action, RouteProps, useAction, useLocation, useSubmissions } from "@solidjs/router"
+import { createMemo, createOptimistic, Errored, flush, For, Match, Show, Switch } from "solid-js"
 import { Loading } from "solid-js"
 import { Title } from "@solidjs/meta"
 import { paths } from "@/router"
@@ -11,7 +11,7 @@ import { AlertCircleIcon, ExternalLinkIcon, RocketIcon } from "@lucide/solid"
 import { cn } from "cn"
 import { DeploymentStatus, SiteStatusBadge, StatusStyles } from "@/components/site-badges"
 import { formatAbsoluteDate, formatSmartDate } from "@/lib/date"
-import { deploy, listDeployments } from "@/data/deployments"
+import { deploy, listDeployments, rollback } from "@/data/deployments"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DeploymentUpload } from "@/components/deployment-upload"
 import { useSubmissionsError } from "@/lib/form"
@@ -23,6 +23,38 @@ import { Badge } from "@/components/ui/badge"
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const deployAction = action(deploy)
+const rollbackAction = action(rollback)
+
+// Direct-invocation action button (no form) -- same pattern as the delete
+// user dialog: useAction binds the router context, promise errors are
+// swallowed here because the submission record carries them for
+// useSubmissionsError.
+function RollbackButton(props: { id: number }) {
+  const rollbackTo = useAction(rollbackAction)
+  const submissions = useSubmissions(rollbackAction, (input) => input[0] === props.id)
+  return (
+    <Button
+      variant="tonal"
+      size="xs"
+      disabled={submissions.length > 0}
+      onClick={() => rollbackTo(props.id).catch(() => {})}
+    >Rollback</Button>
+  )
+}
+
+// One live region for the page; surfaces the latest rollback failure, since
+// there is no dialog to scope the message to.
+function RollbackErrors() {
+  const submissions = useSubmissions(rollbackAction)
+  const { errorMessage } = useSubmissionsError(submissions)
+  return (
+    <div aria-live="polite" class="empty:hidden">
+      <Show when={errorMessage()}>
+        {(message) => <p class="text-destructive text-sm">{message()}</p>}
+      </Show>
+    </div>
+  )
+}
 
 function DeploymentUploadForm(props: { siteId: number }) {
   let formRef: HTMLFormElement | null = null
@@ -241,6 +273,8 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
             <PageSection>
               <PageSectionTitle>Deployments</PageSectionTitle>
 
+              <RollbackErrors />
+
               <Table>
                 <TableCaption class="sr-only">Deployments list</TableCaption>
                 <TableHeader>
@@ -284,7 +318,7 @@ export default function SiteDetail(props: RouteProps<typeof route>) {
                         <TableCell class="w-fit">
                           <Switch>
                             <Match when={ item().status === "success" && site().currentVersion !== item().version}>
-                              <Button variant="tonal" size="xs">Rollback</Button>
+                              <RollbackButton id={item().id} />
                             </Match>
                             {/*<Match when={item().status === "failed"}>
                               <Button variant="tonal" size="xs">View logs</Button>

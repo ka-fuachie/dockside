@@ -23,6 +23,17 @@ export const listDeployments = query(
   QueryKeys.DEPLOYMENTS_LIST,
 );
 
+export const rollback = async (id: number) => {
+  "use server";
+  const { session, api } = event().locals;
+  if (session == null) throw redirect(paths.login());
+
+  validate(z.number(), id);
+
+  await api.deployments.rollback({ id }).catch(handleApiError);
+  return reload({ revalidate: [listDeployments.key, QueryKeys.SITE] });
+};
+
 const MAX_SIZE_IN_BYTES = 50 * 1024 * 1024; // 50MB
 
 async function toUploadBlob(files: File[]): Promise<{ file: Blob; source: string }> {
