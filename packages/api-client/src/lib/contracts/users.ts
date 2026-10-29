@@ -18,11 +18,13 @@ const DeleteRequestSchema = z.object({
 });
 
 export const users = {
-  list: entry(z.union([PageableSchema, z.void()]), pageOf(UserSchema), (payload, ctx) =>
+  list: entry(z.union([PageableSchema.extend({ q: z.string().optional(), role: z.enum(["ADMIN", "DEV"]).optional() }), z.void()]), pageOf(UserSchema), (payload, ctx) =>
     ctx.get("users", {
       query: {
         page: payload?.page,
         size: payload?.size,
+        q: payload?.q,
+        role: payload?.role,
       },
     }),
   ),

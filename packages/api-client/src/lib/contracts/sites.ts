@@ -3,7 +3,10 @@ import * as z from "zod";
 import { entry, PageableSchema } from "./utils";
 import { SiteSchema, pageOf } from "./utils";
 
-const ListRequestSchema = PageableSchema;
+const ListRequestSchema = PageableSchema.extend({
+  q: z.string().optional(),
+  status: z.enum(["up", "down"]).optional(),
+});
 
 const CreateRequestSchema = z.object({
   slug: z.string(),
@@ -20,6 +23,8 @@ export const sites = {
       query: {
         page: payload?.page,
         size: payload?.size,
+        q: payload?.q,
+        status: payload?.status,
       },
     }),
   ),
