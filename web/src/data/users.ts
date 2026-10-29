@@ -29,10 +29,19 @@ const CreateUserSchema = z.object({
   role: z.enum(["ADMIN", "DEV"]),
 });
 
-export const getUsersList = query(async (params?: { page?: number; size?: number }) => {
+const UsersListParamsSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional(),
+  q: z.string().min(1).optional(),
+  role: z.enum(["ADMIN", "DEV"]).optional(),
+});
+
+export const getUsersList = query(async (params?: z.input<typeof UsersListParamsSchema>) => {
   "use server";
   const { session, api } = event().locals;
   if (session == null) throw redirect(paths.login());
+
+  validate(UsersListParamsSchema, params);
 
   const page = await api.users.list(params).catch(handleApiError);
   return page;

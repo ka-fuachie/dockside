@@ -1,5 +1,5 @@
 import { defineFileRoute } from "@solidjs/router/fs"
-import { action, RouteProps, useAction, useSearchParams, useSubmissions } from "@solidjs/router"
+import { action, RouteProps, SearchParams, useAction, useSearchParams, useSubmissions } from "@solidjs/router"
 import { createMemo, createSignal, Errored, For, Loading, Show } from "solid-js"
 import { Title } from "@solidjs/meta"
 import { Button } from "@/components/ui/button"
@@ -140,13 +140,23 @@ function UsersTableSkeleton(props: { num: number }) {
   )
 }
 
-function NoUsersFallback() {
+function NoUsersFallback(props: { filtersEngaged: boolean }) {
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon"><UserIcon /></EmptyMedia>
-        <EmptyTitle>No users found</EmptyTitle>
-        <EmptyDescription>Try adjusting your filters.</EmptyDescription>
+        <Show
+          when={props.filtersEngaged}
+          fallback={
+            <>
+              <EmptyTitle>No users yet</EmptyTitle>
+              <EmptyDescription>Add your first user to get started.</EmptyDescription>
+            </>
+          }
+        >
+          <EmptyTitle>No users match your filters</EmptyTitle>
+          <EmptyDescription>Try adjusting or clearing your filters.</EmptyDescription>
+        </Show>
       </EmptyHeader>
     </Empty>
   )
@@ -216,19 +226,35 @@ function ConfirmDeleteUserDialog(props: { target: UserDeleteTarget | null, onCan
   )
 }
 
+function usersListParams(search: SearchParams) {
+  // Keys with explicit `undefined` values make the args "not JSON-safe" for
+  // the server-functions transport (isJSONSafe rejects non-object owns);
+  // only assign keys we actually want.
+  const params: { q?: string; role?: "ADMIN" | "DEV" } = {};
+  const q = typeof search.q == "string" ? search.q.trim() : undefined;
+  if (q) params.q = q;
+  if (search.role === "admin") params.role = "ADMIN";
+  else if (search.role === "dev") params.role = "DEV";
+  return params;
+}
+
 export const route = defineFileRoute("/users", {
-  preload() {
-    getUsersList()
+  preload(args) {
+    getUsersList(usersListParams(args.location.query));
   }
 })
 
 export default function Users(_props: RouteProps<typeof route>) {
-  const users = createMemo(() => getUsersList())
-  const currentUser = useUser()
   const [search, setSearch] = useSearchParams<{
     q: string,
     role: "all" | "admin" | "dev",
   }>()
+  const hasFilters = createMemo(() => {
+    const q = typeof search.q == "string" ? search.q.trim() : "";
+    return q.length > 0 || search.role === "admin" || search.role === "dev";
+  })
+  const users = createMemo(() => getUsersList(usersListParams(search)))
+  const currentUser = useUser()
   const [deleteTarget, { requestDeleteUser, cancelDeleteUser }] = createUserDeleteTarget()
 
   return (
@@ -324,7 +350,7 @@ export default function Users(_props: RouteProps<typeof route>) {
                     fallback={
                       <TableRow class="hover:bg-transparent!">
                         <TableCell colspan={4}>
-                          <NoUsersFallback />
+                          <NoUsersFallback filtersEngaged={hasFilters()} />
                         </TableCell>
                       </TableRow>
                     }

@@ -9,12 +9,19 @@ import { formatError, handleApiError } from "../lib/server/error";
 import { slugify } from "@/lib/utils";
 import env from "virtual:env/server";
 
-export const getSitesList = query(async (params?: z.infer<typeof PageableSchema>) => {
+const SiteListParamsSchema = z.object({
+  page: z.number().optional(),
+  size: z.number().optional(),
+  q: z.string().min(1).optional(),
+  status: z.enum(["up", "down"]).optional(),
+});
+
+export const getSitesList = query(async (params?: z.input<typeof SiteListParamsSchema>) => {
   "use server";
   const { session, api } = event().locals;
   if (session == null) throw redirect(paths.login());
 
-  validate(PageableSchema, params);
+  validate(SiteListParamsSchema, params);
 
   const page = await api.sites.list(params).catch(handleApiError);
   return page;

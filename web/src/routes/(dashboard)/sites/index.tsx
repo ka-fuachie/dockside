@@ -2,7 +2,7 @@ import { defineFileRoute } from "@solidjs/router/fs"
 import { createSite, getSitesList } from "@/data/sites"
 import { createMemo, Errored, For, Loading, Show } from "solid-js"
 import { Title } from "@solidjs/meta"
-import { action, RouteProps, useSearchParams, useSubmissions } from "@solidjs/router"
+import { action, RouteProps, SearchParams, useSearchParams, useSubmissions } from "@solidjs/router"
 import { Button } from "@/components/ui/button"
 import { AlertCircleIcon, ChevronLeftIcon, ChevronRightIcon, GlobeIcon, LayoutGridIcon, ListSortDescendingIcon, PlusIcon, SearchIcon } from "@lucide/solid"
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field"
@@ -187,32 +187,65 @@ function SitesGridSkeleton(props: { num: number }) {
   )
 }
 
-function NoSitesFallback() {
+function NoSitesFallback(props: { filtersEngaged: boolean; isAdmin: boolean }) {
   return (
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon"><GlobeIcon /></EmptyMedia>
-        <EmptyTitle>No sites yet</EmptyTitle>
-        <EmptyDescription>Create your first site to get started.</EmptyDescription>
+        <Show
+          when={props.filtersEngaged}
+          fallback={
+            <Show
+              when={props.isAdmin}
+              fallback={
+                <>
+                  <EmptyTitle>No sites yet</EmptyTitle>
+                  <EmptyDescription>Ask an admin to add your first site.</EmptyDescription>
+                </>
+              }
+            >
+              <EmptyTitle>No sites yet</EmptyTitle>
+              <EmptyDescription>Create your first site to get started.</EmptyDescription>
+            </Show>
+          }
+        >
+          <EmptyTitle>No sites match your filters</EmptyTitle>
+          <EmptyDescription>Try adjusting or clearing your filters.</EmptyDescription>
+        </Show>
       </EmptyHeader>
     </Empty>
   )
 }
 
+function sitesListParams(search: SearchParams) {
+  // Keys with explicit `undefined` values make the args "not JSON-safe" for
+  // the server-functions transport (isJSONSafe rejects non-object owns);
+  // only assign keys we actually want.
+  const params: { q?: string; status?: "up" | "down" } = {};
+  const q = typeof search.q == "string" ? search.q.trim() : undefined;
+  if (q) params.q = q;
+  if (search.status === "up" || search.status === "down") params.status = search.status;
+  return params;
+}
+
 export const route = defineFileRoute("/sites", {
-  preload() {
-    getSitesList()
+  preload(args) {
+    getSitesList(sitesListParams(args.location.query));
   }
 })
 
 export default function Sites(_props: RouteProps<typeof route>) {
-  const sites = createMemo(() => getSitesList())
-  const isAdmin = useIsAdmin()
   const [search, setSearch] = useSearchParams<{
     q: string,
     status: "all" | "up" | "down",
     view: "list" | "grid"
   }>()
+  const isAdmin = useIsAdmin()
+  const hasFilters = createMemo(() => {
+    const q = typeof search.q == "string" ? search.q.trim() : "";
+    return q.length > 0 || search.status === "up" || search.status === "down";
+  })
+  const sites = createMemo(() => getSitesList(sitesListParams(search)))
 
   return (
     <>
@@ -329,7 +362,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
                         fallback={
                           <TableRow class="hover:bg-transparent!">
                             <TableCell colspan={6}>
-                              <NoSitesFallback />
+                              <NoSitesFallback filtersEngaged={hasFilters()} isAdmin={isAdmin()} />
                             </TableCell>
                           </TableRow>
                         }
@@ -380,7 +413,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
                 </Match>
                 <Match when={search.view === "grid"}>
                   <div class="grid grid-cols-[repeat(auto-fit,minmax(17.5rem,1fr))] gap-4">
-                    <For each={sites().content} keyed={item => item.id} fallback={<NoSitesFallback />}>
+                    <For each={sites().content} keyed={item => item.id} fallback={<NoSitesFallback filtersEngaged={hasFilters()} isAdmin={isAdmin()} />}>
                       {(item) => (
                         <Card class="relative">
                           <CardHeader class="relative">
