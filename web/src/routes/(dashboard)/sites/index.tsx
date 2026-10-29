@@ -21,6 +21,7 @@ import { DeploymentStatus, SiteStatusBadge } from "@/components/site-badges"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Repeat } from "solid-js"
+import { useIsAdmin } from "@/context/user"
 
 const createSiteAction = action(createSite)
 
@@ -206,6 +207,7 @@ export const route = defineFileRoute("/sites", {
 
 export default function Sites(_props: RouteProps<typeof route>) {
   const sites = createMemo(() => getSitesList())
+  const isAdmin = useIsAdmin()
   const [search, setSearch] = useSearchParams<{
     q: string,
     status: "all" | "up" | "down",
@@ -220,7 +222,9 @@ export default function Sites(_props: RouteProps<typeof route>) {
         <PageHeader>
           <PageTitle>Sites</PageTitle>
           <PageHeaderActions>
-            <AddSiteAction />
+            <Show when={isAdmin()}>
+              <AddSiteAction />
+            </Show>
           </PageHeaderActions>
         </PageHeader>
 
@@ -235,7 +239,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
                 "sm:[grid-template-areas:'search_status_._view']",
               ]}
             >
-              <Field class="[grid-area:search] relative h-fit">
+              <Field class="[grid-area:search] relative h-fit sm:w-56">
                 <FieldLabel for="site-search" class="sr-only">Search site</FieldLabel>
                 <div class="w-fit pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 px-2">
                   <SearchIcon class="size-4 text-muted-foreground" />
@@ -422,7 +426,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
                 </Match>
               </Switch>
 
-              <div class="flex items-center flex-wrap gap-4 sm:gap-8 justify-between text-muted-foreground">
+              {/*<div class="flex items-center flex-wrap gap-4 sm:gap-8 justify-between text-muted-foreground">
                 <p class="text-sm">Showing page {sites().number + 1} of {sites().totalPages}</p>
                 <div class="flex items-center gap-1">
                   <Button variant="outlined" size="xs" disabled={sites().number === 0}>
@@ -434,7 +438,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
                     <ChevronRightIcon />
                   </Button>
                 </div>
-              </div>
+              </div>*/}
             </Loading>
           </Errored>
         </PageContent>

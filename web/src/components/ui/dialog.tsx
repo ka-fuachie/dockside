@@ -1,9 +1,10 @@
 import { ComponentProps } from "@solidjs/web"
-import { Accessor, createContext, createSignal, createUniqueId, omit, onSettled, ParentProps, Setter, useContext } from "solid-js"
+import { Accessor, createContext, createEffect, createSignal, createUniqueId, omit, onSettled, ParentProps, Setter, useContext } from "solid-js"
 import { Button } from "@/components/ui/button"
 import { merge } from "solid-js"
 import { cn } from "cn"
 import { XIcon } from "@lucide/solid"
+import { callEventHandler } from "@/lib/event"
 
 type DialogContextValue = {
   dialogModalId: Accessor<string>
@@ -12,7 +13,7 @@ type DialogContextValue = {
 
 const DialogContext = createContext<DialogContextValue>()
 
-export function Dialog(props: ParentProps) {
+export function Dialog(props: ParentProps & { open?: boolean }) {
   const defaultDialogModalId = createUniqueId()
   const [dialogModalIdSource, setDialogModalIdSource] = createSignal<Accessor<string> | null>(null)
   const dialogModalId = () => {
@@ -23,6 +24,19 @@ export function Dialog(props: ParentProps) {
 
     return defaultDialogModalId
   }
+
+  createEffect(() => [props.open, dialogModalId()], ([open, modalId]) => {
+    if(open == null) return
+
+    const dialogEl = document.querySelector(`[id="${modalId}"]`)
+    if (dialogEl == null || !(dialogEl instanceof HTMLDialogElement)) return
+
+    if (open) {
+      dialogEl.showModal()
+    } else {
+      dialogEl.close()
+    }
+  })
 
   return (
     <DialogContext value={{dialogModalId, setDialogModalIdSource}}>
@@ -45,7 +59,7 @@ export function DialogTrigger(props: ComponentProps<typeof Button>) {
         ev.preventDefault()
       }, mergedProps.onCommand]}
       onClick={[() => {
-        const dialogEl = document.querySelector(`[id="dialogModalId()"]`)
+        const dialogEl = document.querySelector(`[id="${dialogModalId()}"]`)
         if (dialogEl != null && dialogEl instanceof HTMLDialogElement) {
           dialogEl.showModal()
         }
@@ -79,14 +93,22 @@ export function DialogModal(props: ComponentProps<"dialog">) {
         "--dialog-body-padding-inline": "max(calc((100vw - var(--dialog-body-max-width))/2), var(--dialog-body-min-padding-inline))",
       }}
       ref={node => dialogModalRef = node}
-      onClick={[(ev) => {
-        if (dialogModalRef != null && ev.target === dialogModalRef) {
-          dialogModalRef.close()
+      onClick={(ev) => {
+        try {
+          if (dialogModalRef != null && ev.target === dialogModalRef) {
+            dialogModalRef.close()
+          }
+        } finally {
+          callEventHandler(props.onClick, ev)
         }
-      }, props.onClick]}
-      onCancel={[ev => {
-        ev.preventDefault()
-      }, props.onCancel]}
+      }}
+      onCancel={ev => {
+        try {
+          ev.preventDefault()
+        } finally {
+          callEventHandler(props.onCancel, ev)
+        }
+      }}
       {...otherProps}
     >
       {props.children}
@@ -123,7 +145,7 @@ export function DialogHeader(props: ComponentProps<"header">) {
             ev.preventDefault()
           }, props.onCommand]}
           onClick={[() => {
-            const dialogEl = document.querySelector(`[id="dialogModalId()"]`)
+            const dialogEl = document.querySelector(`[id="${dialogModalId()}"]`)
             if (dialogEl != null && dialogEl instanceof HTMLDialogElement) {
               dialogEl.close()
             }

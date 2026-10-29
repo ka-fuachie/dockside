@@ -4,4 +4,5 @@ export const QueryKeys = {
   SITES_LIST: "sites-list",
   SITE: "site",
   DEPLOYMENTS_LIST: "deployments-list",
+  USERS_LIST: "users-list",
 } as const;

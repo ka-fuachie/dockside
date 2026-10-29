@@ -1,12 +1,12 @@
 import { paths } from "@/router";
 import Logo from "./logo";
-import { User } from "@/data/user";
+import { User } from "@/data/users";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon } from "@lucide/solid";
 import { logout } from "@/data/auth";
 import { ComponentProps } from "@solidjs/web";
 import { cn } from "cn";
-import { omit } from "solid-js";
+import { omit, Show } from "solid-js";
 
 function NavLink(props: ComponentProps<"a">) {
   const otherProps = omit(props, "class", "children")
@@ -19,6 +19,7 @@ function NavLink(props: ComponentProps<"a">) {
 }
 
 export default function DashboardHeader(props: { user: User }) {
+  const isAdmin = () => props.user.role === "ADMIN"
   return (
     <header
       class={[
@@ -36,8 +37,9 @@ export default function DashboardHeader(props: { user: User }) {
         <nav class="w-fit h-full">
           <ul class="h-full flex gap-0 sm:gap-3">
             <li><NavLink href={paths.sites()}><span>Sites</span></NavLink></li>
-            <li><NavLink href={""}><span>Users</span></NavLink></li>
-            {/*<li><a href={paths.users()}>Users</a></li>*/}
+            <Show when={isAdmin()}>
+              <li><NavLink href={paths.users()}><span>Users</span></NavLink></li>
+            </Show>
           </ul>
         </nav>
       </div>
