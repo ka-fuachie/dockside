@@ -26,12 +26,8 @@ function Dropzone(props: ComponentProps<"div"> & DropzoneProps) {
       await new Promise<void>(resolve => {
         entry.file(file => {
           const relativePath = path != "" ? `${path}/${file.name}` : file.name
-          Object.defineProperty(file, 'webkitRelativePath', {
-            value: relativePath,
-            writable: false,
-            configurable: true
-          });
-          files.push(file)
+          const renamed = new File([file], relativePath)
+          files.push(renamed)
           resolve()
         })
       })

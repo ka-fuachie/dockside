@@ -89,7 +89,13 @@ async function toUploadBlob(files: File[]): Promise<{ file: Blob; source: string
 
   const fileRawMap = Object.fromEntries(
     await Promise.all(
-      files.map(async (file) => [file.name, new Uint8Array(await file.arrayBuffer())] as const),
+      files.map(
+        async (file) =>
+          [
+            file.name.includes("/") ? file.name.split("/").slice(1).join("/") : file.name,
+            new Uint8Array(await file.arrayBuffer()),
+          ] as const,
+      ),
     ),
   );
   return {

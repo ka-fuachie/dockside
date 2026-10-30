@@ -33,6 +33,7 @@ function RollbackButton(props: { id: number }) {
     <Button
       variant="tonal"
       size="xs"
+      class="-my-4"
       disabled={submissions.length > 0}
       onClick={() => rollbackTo(props.id).catch(() => {})}
     >Rollback</Button>
@@ -56,7 +57,7 @@ function DeploymentIncidents(props: { deploymentId: number }) {
 
   return (
     <Dialog>
-      <DialogTrigger variant="tonal" size="xs">View logs</DialogTrigger>
+      <DialogTrigger variant="tonal" size="xs" class="-my-4">View logs</DialogTrigger>
 
       <DialogModal
         class="[--dialog-body-max-width:56rem]"
