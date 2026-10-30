@@ -26,6 +26,7 @@ import jakarta.validation.Valid;
 import sh.dockside.api.deployment.DeploymentRepository;
 import sh.dockside.api.deployment.DeploymentResponse;
 import sh.dockside.api.deployment.DeploymentStatus;
+import sh.dockside.api.deployment.JobType;
 import sh.dockside.api.incident.Incident;
 import sh.dockside.api.incident.IncidentRepository;
 import sh.dockside.api.site.SiteRepository;
@@ -90,12 +91,14 @@ public class AgentController {
 
     if(Boolean.TRUE.equals(body.success())) {
       deployment.setStatus(DeploymentStatus.success);
+      deployment.setJobType(JobType.build);
     } else {
       deployment.setStatus(DeploymentStatus.failed);
+      deployment.setJobType(JobType.build);
       var incident = new Incident();
       incident.setDeployment(deployment);
       incident.setSite(deployment.getSite());
-      incident.setReason("deploy failed");
+      incident.setReason(deployment.getJobType() == JobType.repoint ? "repoint failed" : "deploy failed");
       incident.setLogs(body.logs());
       incidents.save(incident);
     }
@@ -110,6 +113,7 @@ public class AgentController {
       .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "deployment not found"));
 
     deployment.setStatus(DeploymentStatus.success);
+    deployment.setJobType(JobType.build);
     var site = deployment.getSite();
     site.setCurrentVersion(deployment.getVersion());
     return SiteResponse.from(sites.save(site));

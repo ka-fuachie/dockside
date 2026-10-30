@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import sh.dockside.api.site.SiteRepository;
 import sh.dockside.api.site.SiteResponse;
 
 @RestController
@@ -17,11 +16,9 @@ import sh.dockside.api.site.SiteResponse;
 @SecurityRequirement (name = "bearerAuth")
 public class RollbackController {
   private final DeploymentRepository deployments;
-  private final SiteRepository sites;
 
-  public RollbackController(DeploymentRepository deployments, SiteRepository sites) {
+  public RollbackController(DeploymentRepository deployments) {
     this.deployments = deployments;
-    this.sites = sites;
   }
 
   @PostMapping("/{id}/rollback")
@@ -32,10 +29,16 @@ public class RollbackController {
     if (deployment.getStatus() != DeploymentStatus.success) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "only success builds are rollback-eligible");
     }
+    if (deployments.existsBySiteIdAndStatusAndIdNot(deployment.getSite().getId(), DeploymentStatus.running, id)) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "site has a deployment in progress");
+    }
+
+    deployment.setJobType(JobType.repoint);
+    deployment.setStatus(DeploymentStatus.running);
+    deployments.save(deployment);
 
     var site = deployment.getSite();
-    site.setCurrentVersion(deployment.getVersion());
     var latest = deployments.findFirstBySiteIdOrderByVersionDesc(site.getId()).orElse(null);
-    return SiteResponse.from(sites.save(site), null, latest);
+    return SiteResponse.from(site, null, latest);
   }
 }

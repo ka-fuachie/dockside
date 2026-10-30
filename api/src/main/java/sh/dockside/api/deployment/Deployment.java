@@ -32,6 +32,10 @@ public class Deployment {
   @Column(nullable = false)
   private DeploymentStatus status;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private JobType jobType = JobType.build;
+
   @Column(name = "artifact_path", nullable = false)
   private String artifactPath;
 
@@ -52,6 +56,7 @@ public class Deployment {
   public User  getCreatedBy() { return createdBy; }
   public Integer getVersion() { return version; }
   public DeploymentStatus getStatus() { return status; }
+  public JobType getJobType() { return jobType; }
   public String getArtifactPath() { return artifactPath; }
   public String getConfigJson() { return configJson; }
   public Instant getCreatedAt() { return createdAt; }
@@ -60,6 +65,7 @@ public class Deployment {
   public void setCreatedBy(User createdBy) { this.createdBy = createdBy; }
   public void setVersion(Integer version) { this.version = version; }
   public void setStatus(DeploymentStatus status) { this.status = status; }
+  public void setJobType(JobType jobType) { this.jobType = jobType; }
   public void setArtifactPath(String artifactPath) { this.artifactPath = artifactPath; }
   public void setConfigJson(String configJson) { this.configJson = configJson; }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE deployments ADD COLUMN job_type VARCHAR(255) NOT NULL DEFAULT 'build';

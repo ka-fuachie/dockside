@@ -2,6 +2,7 @@ import { createEffect, createSignal, onSettled, Setter } from "solid-js";
 import { Button } from "./ui/button";
 import { MoonIcon, SunIcon } from "@lucide/solid";
 import { Script } from "@solidjs/meta";
+import { ComponentProps } from "@solidjs/web";
 
 const Theme = {
   LIGHT: "light",
@@ -63,7 +64,7 @@ function createTheme() {
   return [theme, setTheme] as const
 }
 
-export function ThemeToggle() {
+export function ThemeToggle(props: { class: ComponentProps<"button">["class"] }) {
   const [theme, setTheme] = createTheme()
 
   return (
@@ -72,6 +73,7 @@ export function ThemeToggle() {
         size="icon"
         variant="tonal"
         title="Toggle theme"
+        class={props.class}
         aria-pressed={theme() === Theme.DARK ? "true": "false"}
         onClick={() => setTheme(t => t === Theme.DARK? Theme.LIGHT: Theme.DARK)}
       >

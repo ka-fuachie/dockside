@@ -85,6 +85,7 @@ export const DeploymentSchema = z.object({
   siteSlug: z.string(),
   version: z.number(),
   status: DeploymentStatusSchema,
+  jobType: z.enum(["build", "repoint"]),
   createdAt: z.string(),
   createdByUsername: z.string().nullable().optional(),
 });

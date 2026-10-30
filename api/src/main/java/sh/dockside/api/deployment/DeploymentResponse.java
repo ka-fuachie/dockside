@@ -8,6 +8,7 @@ public record DeploymentResponse(
   String siteSlug,
   Integer version,
   DeploymentStatus status,
+  JobType jobType,
   Instant createdAt,
   String createdByUsername
 ) {
@@ -18,6 +19,7 @@ public record DeploymentResponse(
       d.getSite().getSlug(),
       d.getVersion(),
       d.getStatus(),
+      d.getJobType(),
       d.getCreatedAt(),
       d.getCreatedBy() != null ? d.getCreatedBy().getUsername(): null
     );

@@ -89,12 +89,32 @@ export class Worker {
     const job = await this.#api.agent.nextJob(undefined, { signal });
     if (job == null) return;
 
-    const { id, siteSlug, version } = job;
-    const logger = this.#baseLogger.child({ id, site: siteSlug, version });
-    const lines = [`job ${id} site=${siteSlug} v${version}`];
+    const { id, siteSlug, version, jobType } = job;
+    const logger = this.#baseLogger.child({ id, site: siteSlug, version, jobType });
+    const lines = [`job ${id} site=${siteSlug} v${version} type=${jobType}`];
 
     try {
       logger.info("claimed job");
+
+      if (jobType === "repoint") {
+        const finalDir = path.join(this.#sitesDir, siteSlug, version.toString());
+        try {
+          const st = await fs.stat(path.join(finalDir, "index.html"));
+          if (!st.isFile()) throw new Error("not a file");
+        } catch {
+          throw new Error(`entry not found: v${version}`);
+        }
+
+        await this.#swapCurrent(siteSlug, version);
+
+        lines.push(`repointed to v${version}`);
+        logger.info("repointed");
+        this.#deploySuccess.inc();
+        await this.#api.agent.activate({ deploymentId: id });
+        logger.info("activated");
+        return;
+      }
+
       const bytes = await this.#api.agent.artifact({ deploymentId: id }, { signal });
       const stagingDir = path.join(this.#sitesDir, siteSlug, `${version}.tmp`);
       const finalDir = path.join(this.#sitesDir, siteSlug, version.toString());
@@ -123,11 +143,7 @@ export class Worker {
 
       await this.#commitPublishDir(stagingDir, publish, finalDir);
 
-      const current = path.join(this.#sitesDir, siteSlug, "current");
-      const tmpLink = path.join(this.#sitesDir, siteSlug, "current.tmp");
-      await fs.rm(tmpLink, { force: true });
-      await fs.symlink(version.toString(), tmpLink);
-      await fs.rename(tmpLink, current);
+      await this.#swapCurrent(siteSlug, version);
 
       lines.push(`published v${version} publish=${publish}`);
       logger.info({ publish }, "published");
@@ -150,6 +166,14 @@ export class Worker {
         logs: lines.join("\n").slice(-TAIL),
       });
     }
+  }
+
+  async #swapCurrent(siteSlug: string, version: number) {
+    const current = path.join(this.#sitesDir, siteSlug, "current");
+    const tmpLink = path.join(this.#sitesDir, siteSlug, "current.tmp");
+    await fs.rm(tmpLink, { force: true });
+    await fs.symlink(version.toString(), tmpLink);
+    await fs.rename(tmpLink, current);
   }
 
   async #initStagingDir(stagingDir: string) {

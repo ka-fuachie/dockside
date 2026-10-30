@@ -43,8 +43,8 @@ export default function App() {
           >
             {props.children}
 
-            <div class="fixed bottom-0 right-0 p-4 sm:p-8">
-              <ThemeToggle />
+            <div class="fixed bottom-0 right-0 p-4 sm:p-8 z-100 pointer-events-none">
+              <ThemeToggle class="pointer-events-auto" />
             </div>
           </Loading>
         </>

@@ -197,6 +197,7 @@ describe("transport", () => {
         siteSlug: "demo",
         version: 1,
         status: "running",
+        jobType: "build",
         createdAt: "now",
         up: null,
         cheackedAt: null,
