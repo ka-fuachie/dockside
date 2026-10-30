@@ -1,5 +1,5 @@
 import { defineFileRoute } from "@solidjs/router/fs"
-import { createSite, getSitesList } from "@/data/sites"
+import { createSite, liveSites } from "@/data/sites"
 import { createMemo, Errored, For, Loading, Show } from "solid-js"
 import { JSX } from "@solidjs/web/jsx-runtime"
 import { Title } from "@solidjs/meta"
@@ -248,7 +248,7 @@ function SiteDetailLink(props: { slug: string; class?: string; children: JSX.Ele
 
 export const route = defineFileRoute("/sites", {
   preload(args) {
-    getSitesList(sitesListParams(args.location.query));
+    liveSites(sitesListParams(args.location.query));
   }
 })
 
@@ -263,7 +263,7 @@ export default function Sites(_props: RouteProps<typeof route>) {
     const q = typeof search.q == "string" ? search.q.trim() : "";
     return q.length > 0 || search.status === "up" || search.status === "down";
   })
-  const sites = createMemo(() => getSitesList(sitesListParams(search)))
+  const sites = createMemo(() => liveSites(sitesListParams(search)))
 
   return (
     <>

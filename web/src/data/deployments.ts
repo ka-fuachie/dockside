@@ -2,11 +2,14 @@ import { formatError, handleApiError } from "@/lib/server/error";
 import { QueryKeys } from "@/lib/server/query";
 import { event, PageableSchema, validate } from "@/lib/server/utils";
 import { paths } from "@/router";
-import { query } from "@solidjs/router";
-import { redirect, reload, respond } from "@solidjs/web";
+import { liveQuery, query } from "@solidjs/router";
+import { redirect, respond } from "@solidjs/web";
 import "zod/compile";
 import * as z from "zod";
 import { zipSync } from "fflate";
+import { poll, invalidatePoll } from "@/lib/server/polling";
+import { liveSite } from "@/data/sites";
+import { ApiClient } from "@dockside/api-client";
 
 export const listDeployments = query(
   async (siteId: number, params?: z.infer<typeof PageableSchema>) => {
@@ -23,6 +26,34 @@ export const listDeployments = query(
   QueryKeys.DEPLOYMENTS_LIST,
 );
 
+const LIVE_DEPLOYMENT_POLLING_DELAY_MS = 5000;
+export const liveDeployments: ReturnType<
+  typeof liveQuery<
+    (
+      siteId: number,
+      params?: z.infer<typeof PageableSchema>,
+    ) => AsyncGenerator<Awaited<ReturnType<ApiClient["deployments"]["history"]>>, void, unknown>
+  >
+> = liveQuery(async function* (siteId: number, params?: z.infer<typeof PageableSchema>) {
+  "use server";
+  const { session, api, sessionStore } = event().locals;
+  if (session == null) throw redirect(paths.login());
+
+  validate(z.number(), siteId);
+  validate(PageableSchema, params);
+
+  yield* poll(
+    async () => {
+      const currentSession = await sessionStore.get(session.id);
+      if (currentSession == null) throw redirect(paths.login());
+      const page = await api.deployments.history({ siteId, ...params }).catch(handleApiError);
+      return page;
+    },
+    LIVE_DEPLOYMENT_POLLING_DELAY_MS,
+    liveDeployments.keyFor(siteId, params),
+  );
+}, QueryKeys.LIVE_DEPLOYMENTS);
+
 export const rollback = async (id: number) => {
   "use server";
   const { session, api } = event().locals;
@@ -31,7 +62,8 @@ export const rollback = async (id: number) => {
   validate(z.number(), id);
 
   await api.deployments.rollback({ id }).catch(handleApiError);
-  return reload({ revalidate: [listDeployments.key, QueryKeys.SITE] });
+  invalidatePoll(liveDeployments.key);
+  invalidatePoll(liveSite.key);
 };
 
 const MAX_SIZE_IN_BYTES = 50 * 1024 * 1024; // 50MB
@@ -107,7 +139,6 @@ export const deploy = async (siteId: number, form: FormData) => {
     individualFiles: form.getAll("file").filter((f) => f instanceof File && f.name !== ""),
     folderFiles: form.getAll("folder").filter((f) => f instanceof File && f.name !== ""),
   };
-  console.log(payload);
   validate(DeploySchema, payload);
 
   const packed = await (() => {
@@ -128,5 +159,5 @@ export const deploy = async (siteId: number, form: FormData) => {
     });
 
   await api.deployments.upload({ siteId: payload.siteId, file: packed.file }).catch(handleApiError);
-  return reload({ revalidate: [listDeployments.keyFor(payload.siteId)] });
+  invalidatePoll(liveDeployments.key);
 };

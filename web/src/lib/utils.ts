@@ -8,3 +8,9 @@ export function slugify(name: string) {
     .replace(/^-|-$/g, "");
   return slug || null;
 }
+
+export function wait(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), ms);
+  });
+}

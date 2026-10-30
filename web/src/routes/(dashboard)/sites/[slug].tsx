@@ -1,5 +1,5 @@
 import { defineFileRoute } from "@solidjs/router/fs"
-import { getSite, getSiteUrl } from "@/data/sites"
+import { liveSite, getSiteUrl } from "@/data/sites"
 import { action, RouteProps, useAction, useLocation, useSubmissions } from "@solidjs/router"
 import { createMemo, createOptimistic, createSignal, Errored, flush, For, Match, Show, Switch } from "solid-js"
 import { Loading } from "solid-js"
@@ -11,7 +11,7 @@ import { AlertCircleIcon, ExternalLinkIcon, RocketIcon } from "@lucide/solid"
 import { cn } from "cn"
 import { DeploymentStatus, SiteStatusBadge, StatusStyles } from "@/components/site-badges"
 import { formatAbsoluteDate, formatSmartDate } from "@/lib/date"
-import { deploy, listDeployments, rollback } from "@/data/deployments"
+import { deploy, liveDeployments, rollback } from "@/data/deployments"
 import { getIncidents } from "@/data/incidents"
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DeploymentUpload } from "@/components/deployment-upload"
@@ -66,43 +66,41 @@ function DeploymentIncidents(props: { deploymentId: number }) {
             <h2 class="text-xl text-left">Deployment #{props.deploymentId} incidents</h2>
           </DialogHeader>
 
-          <Show when={open()}>
-            <Errored fallback={(err, reset) => (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon"><AlertCircleIcon /></EmptyMedia>
-                  <EmptyTitle>Failed to load incidents</EmptyTitle>
-                  <EmptyDescription>{(err() as Error)?.message ?? "Something went wrong"}</EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button size="sm" variant="tonal" onClick={reset}>Try again</Button>
-                </EmptyContent>
-              </Empty>
-            )}>
-              <Loading fallback={<Skeleton class="h-6 w-48" />}>
-                <Show
-                  when={incidents().length > 0}
-                  fallback={<p class="text-muted-foreground text-left">No incidents were recorded for this deployment.</p>}
-                >
-                  <div class="grid gap-6 max-h-[60vh] overflow-y-auto">
-                    <For each={incidents()} keyed={incident => incident.id}>
-                      {(incident) => (
-                        <div class="grid gap-2">
-                          <div class="flex items-baseline justify-between gap-4">
-                            <p class="text-left">{incident().reason}</p>
-                            <time datetime={incident().createdAt} class="text-muted-foreground text-xs">{formatAbsoluteDate(incident().createdAt)}</time>
-                          </div>
-                          <pre class="text-xs font-mono bg-muted/50 rounded-md p-3 overflow-auto text-left whitespace-pre-wrap wrap-break-word">
-                            {incident().logs ?? "No logs were captured for this incident."}
-                          </pre>
+          <Errored fallback={(err, reset) => (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><AlertCircleIcon /></EmptyMedia>
+                <EmptyTitle>Failed to load incidents</EmptyTitle>
+                <EmptyDescription>{(err() as Error)?.message ?? "Something went wrong"}</EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button size="sm" variant="tonal" onClick={reset}>Try again</Button>
+              </EmptyContent>
+            </Empty>
+          )}>
+            <Loading fallback={<Skeleton class="h-6 w-48" />}>
+              <Show
+                when={incidents().length > 0}
+                fallback={<p class="text-muted-foreground text-left">No incidents were recorded for this deployment.</p>}
+              >
+                <div class="grid gap-6 max-h-[60vh] overflow-y-auto">
+                  <For each={incidents()} keyed={incident => incident.id}>
+                    {(incident) => (
+                      <div class="grid gap-2">
+                        <div class="flex items-baseline justify-between gap-4">
+                          <p class="text-left">{incident().reason}</p>
+                          <time datetime={incident().createdAt} class="text-muted-foreground text-xs">{formatAbsoluteDate(incident().createdAt)}</time>
                         </div>
-                      )}
-                    </For>
-                  </div>
-                </Show>
-              </Loading>
-            </Errored>
-          </Show>
+                        <pre class="text-xs font-mono bg-muted/50 rounded-md p-3 overflow-auto text-left whitespace-pre-wrap wrap-break-word">
+                          {incident().logs ?? "No logs were captured for this incident."}
+                        </pre>
+                      </div>
+                    )}
+                  </For>
+                </div>
+              </Show>
+            </Loading>
+          </Errored>
         </DialogBody>
       </DialogModal>
     </Dialog>
@@ -220,14 +218,14 @@ function NoDeploymentsFallback() {
 
 export const route = defineFileRoute("/sites/:slug", {
   preload({ params }) {
-    getSite(params.slug)
+    liveSite(params.slug)
   }
 })
 
 export default function SiteDetail(props: RouteProps<typeof route>) {
   const location = useLocation();
-  const site = createMemo(() => getSite(props.params.slug));
-  const deployments = createMemo(() => listDeployments(site().id))
+  const site = createMemo(() => liveSite(props.params.slug));
+  const deployments = createMemo(() => liveDeployments(site().id))
   const siteUrl = createMemo(() => getSiteUrl(props.params.slug))
 
   return (

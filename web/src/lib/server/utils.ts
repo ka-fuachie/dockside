@@ -1,5 +1,5 @@
 import { getRequestEvent, respond } from "@solidjs/web";
-import "zod/compile"
+import "zod/compile";
 import * as z from "zod";
 import { formatError } from "./error";
 
@@ -32,7 +32,9 @@ export function event() {
   return ev;
 }
 
-export const PageableSchema = z.object({
-  page: z.number().optional(),
-  size: z.number().optional()
-}).optional()
+export const PageableSchema = z
+  .object({
+    page: z.number().optional(),
+    size: z.number().optional(),
+  })
+  .optional();
