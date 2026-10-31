@@ -7,7 +7,13 @@ import { loadEnv } from "vite";
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, "../", "");
 
+  // prod nginx serves the app under /app (see nginx/templates/default.conf.template);
+  // dev keeps the root so vite iteration is unchanged. Set VITE_BASE_PATH=/app in
+  // Dockerfile.web for the prod build.
+  const basePath = (env.VITE_BASE_PATH || "/").replace(/\/+$/, "");
+
   return {
+    base: basePath === "/" ? "/" : `${basePath}/`,
     // Turnkey client mode: no index.html and no mount file — the plugin generates
     // the entries around src/App.tsx (wrapped in src/Document.tsx) and `vite build`
     // prerenders the shell into a purely static dist/client.

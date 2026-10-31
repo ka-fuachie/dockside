@@ -8,6 +8,7 @@ declare module 'virtual:env/client' {
     ? O
     : string;
   const env: {
+    readonly "VITE_BASE_PATH": __Out<__Schema["client"]["VITE_BASE_PATH"]>;
   };
   export { env };
   export default env;
@@ -26,6 +27,7 @@ declare module 'virtual:env/server' {
     readonly "REDIS_HOST": __Out<__Schema["server"]["REDIS_HOST"]>;
     readonly "REDIS_PORT": __Out<__Schema["server"]["REDIS_PORT"]>;
     readonly "REDIS_PASSWORD": __Out<__Schema["server"]["REDIS_PASSWORD"]>;
+    readonly "VITE_BASE_PATH": __Out<__Schema["client"]["VITE_BASE_PATH"]>;
   };
   export { env };
   export default env;

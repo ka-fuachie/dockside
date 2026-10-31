@@ -180,6 +180,8 @@ export function createClient(
   defaultState?: ApiClientState,
   callbacks?: ApiClientCallbacks,
 ) {
+  const normalizedBase = baseUrl.replace(/\/+$/, "") + "/";
+
   const state = { ...defaultState };
   const refreshing: RefreshingState = { promise: null };
 
@@ -187,9 +189,12 @@ export function createClient(
     return Object.fromEntries(
       Object.entries(contract).map(([key, entry]) => {
         if (entry == auth.refresh) {
-          return [key, buildMethod(baseUrl, state, entry, callbacks ?? null)];
+          return [key, buildMethod(normalizedBase, state, entry, callbacks ?? null)];
         }
-        return [key, buildMethodWithRefresh(refreshing, baseUrl, state, entry, callbacks ?? null)];
+        return [
+          key,
+          buildMethodWithRefresh(refreshing, normalizedBase, state, entry, callbacks ?? null),
+        ];
       }),
     ) as { [K in keyof T]: ReturnType<typeof buildMethod<T[K]>> };
   }

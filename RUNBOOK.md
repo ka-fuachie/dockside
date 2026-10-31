@@ -9,10 +9,10 @@
 | Piece | Runs as | Reaches | Notes |
 |---|---|---|---|
 | db | postgres:16-alpine container | — | data in `postgres_data` volume |
-| api | container (built from `api/Dockerfile`) | db | JVM; healthcheck `/actuator/health` |
-| web | container (`Dockerfile.web`) | api | Solid 2.0 SSR; healthcheck `/` |
+| api | container (built from `api/Dockerfile`) | db | JVM; serves under `/api` (context-path); healthcheck `/api/actuator/health` |
+| web | container (`Dockerfile.web`) | api | Solid 2.0 SSR; built with `VITE_BASE_PATH=/app`; healthcheck `/app/` |
 | worker | container (`Dockerfile.worker`) | api (API_URL), nginx (SITES_BASE_URL) | deploy loop + health loop + metrics on `:3001` |
-| nginx | official image + host conf | web, api, filesystem `/srv/sites` | two server blocks: `dockside.localhost` (sites) + `app.dockside.localhost` (app) |
+| nginx | official image + env template | web, api, filesystem `/srv/sites` | one server block: `/api/` → api (prefix stripped), `/app/` → web, `/` → 301 `/app/`, `/sites/<slug>/…` → `/srv/sites/<slug>/current/…` |
 | prometheus | container | api/worker | `prometheus.prod.yml` in prod mode |
 | grafana | container | prometheus | dashboards file-provisioned from `grafana/provisioning/` |
 
@@ -141,7 +141,7 @@ docker compose -f docker-compose.yml -f compose.prod.yml up -d --force-recreate 
 | Symptom | Look at | Most common causes |
 |---|---|---|
 | everything down | `docker compose ps` | a container crash-looping (Restarting) — follow its logs |
-| 502 from nginx on `/` | `docker logs nginx`, check web's `ps` health | upstream DNS resolved before web was up (recreate: `up -d nginx`) |
+| 502 from nginx on `/app/` | `docker logs nginx`, check web's `ps` health | upstream DNS resolved before web was up (recreate: `up -d nginx`) |
 | 502 for api (`/api/*`) | same | api unhealthy; usually env misconfig or db unreachable |
 | sites URL 404 | `docker run --rm -v dockside_site-data:/data:ro alpine ls /data` | file not in site-data (vision: did the deploy finish? did worker health-check pass?) |
 | deploy → 500 | api logs during deploy | uploads volume permission (needs baked-in `mkdir + chown` in api's image) |

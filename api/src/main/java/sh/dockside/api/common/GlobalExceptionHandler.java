@@ -9,9 +9,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+  // unknown paths (e.g. swagger source maps) — a plain 404, not an error
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> noResource(NoResourceFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+      .body(new ErrorResponse("NOT_FOUND", "no such path", null));
+  }
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> validation(MethodArgumentNotValidException ex) {
     var fields = ex.getBindingResult().getFieldErrors().stream()

@@ -11,4 +11,7 @@ export default {
     REDIS_PORT: z.coerce.number(),
     REDIS_PASSWORD: z.string(),
   },
+  client: {
+    VITE_BASE_PATH: z.string().default("/"),
+  },
 };

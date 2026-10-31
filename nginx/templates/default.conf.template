@@ -2,8 +2,8 @@ upstream api_upstream { server ${NGINX_API_UPSTREAM}; }
 upstream web_upstream { server ${NGINX_WEB_UPSTREAM}; }
 
 server {
-  listen 80;
-  server_name dockside.localhost;
+  listen 80 default_server;
+  server_name _;
   client_max_body_size 50m;
   absolute_redirect off;
 
@@ -19,21 +19,22 @@ server {
     alias /srv/sites/$slug/current/$rest;
     index index.html;
   }
-}
 
-server {
-  listen 80;
-  server_name app.dockside.localhost;
-  client_max_body_size 50m;
-
-  location /api/ {
-    proxy_pass http://api_upstream/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $remote_addr;
-  }
-  location / {
+  # dashboard: web app knows its own /app basepath
+  location /app/ {
     proxy_pass http://web_upstream;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $remote_addr;
+  }
+
+  # api: API serves under /api itself (context-path) — pass the URI through unchanged
+  location /api/ {
+    proxy_pass http://api_upstream;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+  }
+
+  location = / {
+    return 301 /app/;
   }
 }

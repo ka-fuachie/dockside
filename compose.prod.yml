@@ -41,7 +41,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      API_URL: http://api:8080
+      API_URL: http://api:8080/api
       SITES_BASE_URL: http://nginx
       WEB_SESSION_SECRET: ${WEB_SESSION_SECRET}
       REDIS_HOST: redis_local
@@ -58,7 +58,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      API_URL: http://api:8080
+      API_URL: http://api:8080/api
       AGENT_TOKEN: ${AGENT_TOKEN}
       WORKER_PORT: 3001
       SITES_DIR: /srv/sites
