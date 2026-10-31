@@ -26,15 +26,29 @@ export type Session = z.infer<typeof SessionSchema>;
 const STORAGE_DIR = path.join(os.homedir(), ".config", "dockside");
 const getFile = (profile: string) => path.join(STORAGE_DIR, `${profile}.json`);
 
-export async function loadSession(profile: string) {
+export type SessionState =
+  | { status: "ok"; session: Session }
+  | { status: "missing" }
+  | { status: "corrupt" };
+
+export async function loadSessionState(profile: string): Promise<SessionState> {
   let data: string;
   try {
     data = await fs.readFile(getFile(profile), "utf-8");
   } catch {
-    return null;
+    return { status: "missing" };
   }
 
-  return SessionSchema.parse(JSON.parse(data));
+  try {
+    return { status: "ok", session: SessionSchema.parse(JSON.parse(data)) };
+  } catch {
+    return { status: "corrupt" };
+  }
+}
+
+export async function loadSession(profile: string) {
+  const state = await loadSessionState(profile);
+  return state.status === "ok" ? state.session : null;
 }
 
 export async function saveSession(profile: string, session: Session) {

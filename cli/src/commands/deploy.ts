@@ -5,8 +5,8 @@ import { zipSync } from "fflate";
 import { program } from "../program";
 import { createAuthedClient } from "../api";
 import { getProfile } from "../lib/config";
-import { resolveSiteId } from "../lib/utils";
-import { fail, print } from "../lib/io";
+import { reportIncident, resolveSiteId } from "../lib/utils";
+import { fail, print, progress, statusGlyph } from "../lib/io";
 import { ApiClient, ApiError } from "@dockside/api-client";
 
 async function zipDir(dir: string): Promise<Blob> {
@@ -46,8 +46,16 @@ const MIN_POLLING_DELAY = 2000;
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-async function pollDeployment(api: ApiClient, siteId: number, id: number, version: number) {
+async function pollDeployment(
+  api: ApiClient,
+  siteId: number,
+  id: number,
+  version: number,
+  asJson: boolean,
+) {
   const signal = AbortSignal.timeout(MAX_POLLING_DURATION);
+  const startedAt = Date.now();
+  let lastBeat = startedAt;
 
   while (true) {
     try {
@@ -55,6 +63,12 @@ async function pollDeployment(api: ApiClient, siteId: number, id: number, versio
       const page = await api.deployments.history({ siteId }, { signal });
       const found = page.content.find((d: any) => d.id === id);
       if (found && found.status !== "running") return found;
+
+      const now = Date.now();
+      if (now - lastBeat >= 15_000) {
+        lastBeat = now;
+        progress(asJson, () => `v${version} (#${id}) still running… ${Math.round((now - startedAt) / 1000)}s`);
+      }
     } catch (err) {
       if (err instanceof Error && err.name === "TimeoutError") {
         throw new Error(`timed out waiting for v${version} (#${id})`);
@@ -90,9 +104,19 @@ export const deploy = new Command()
         );
       }
 
-      const done = await pollDeployment(api, siteId, dep.id, dep.version);
-      print(!!opts.json, done, () => `v${done.version}: ${done.status}`);
-      if (done.status !== "success") process.exit(1);
+      const done = await pollDeployment(api, siteId, dep.id, dep.version, !!opts.json);
+      if (done.status === "success") {
+        print(!!opts.json, done, () => `v${done.version}: ${statusGlyph(done.status)}`);
+        return;
+      }
+
+      const incident = await reportIncident(api, dep.id, !!opts.json);
+      print(
+        !!opts.json,
+        { ...done, ...incident },
+        () => `v${done.version}: ${statusGlyph(done.status)}`,
+      );
+      process.exit(1);
     } catch (err: any) {
       fail(!!opts.json, err.code ?? "REQUEST_FAILED", err.message);
     }

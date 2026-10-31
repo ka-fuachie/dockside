@@ -1,21 +1,22 @@
 import { createClient } from "@dockside/api-client";
-import { clearSession, loadSession, saveSession, Session } from "./lib/config";
+import { clearSession, loadSessionState, saveSession, Session } from "./lib/config";
 
 export async function createAuthedClient(profile: string) {
-  let session: Session | null;
-  try {
-    session = await loadSession(profile);
-  } catch {
-    throw new Error(
-      `failed to load session (profile "${profile}"), run "dockside login --profile ${profile}"`,
-    );
-  }
+  const state = await loadSessionState(profile);
 
-  if (session == null) {
+  if (state.status === "missing") {
     throw new Error(
       `not logged in (profile "${profile}"), run "dockside login --profile ${profile}"`,
     );
   }
+
+  if (state.status === "corrupt") {
+    throw new Error(
+      `session corrupt (profile "${profile}"), run "dockside login --profile ${profile}"`,
+    );
+  }
+
+  const { session } = state;
 
   return createClient(
     session.baseUrl,

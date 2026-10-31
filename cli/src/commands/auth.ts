@@ -1,7 +1,15 @@
 import { Command } from "@commander-js/extra-typings";
 import { ask, fail, print } from "../lib/io";
 import { program } from "../program";
-import { DEFAULT_API_URL, getApiUrl, getProfile, loadSession, saveSession } from "../lib/config";
+import {
+  DEFAULT_API_URL,
+  clearSession,
+  getApiUrl,
+  getProfile,
+  loadSessionState,
+  saveSession,
+} from "../lib/config";
+import { decodeAccessClaims } from "../lib/jwt";
 import { createClient } from "@dockside/api-client";
 import { createAuthedClient } from "../api";
 
@@ -29,25 +37,79 @@ export const login = new Command()
 export const logout = new Command().name("logout").action(async () => {
   const opts = program.opts();
   const profile = getProfile(opts.profile);
-  try {
-    const api = await createAuthedClient(profile);
-    const session = await loadSession(profile);
-    if (session == null) {
-      print(
-        !!opts.json,
-        { ok: true, alreadyLoggedOut: true },
-        () => `not logged in — nothing to do`,
-      );
-      return;
-    }
+  const state = await loadSessionState(profile);
 
-    api.auth.logout({ refreshToken: session!.refreshToken });
+  if (state.status === "missing") {
+    print(!!opts.json, { ok: true, alreadyLoggedOut: true }, () => `not logged in — nothing to do`);
+    return;
+  }
+
+  if (state.status === "corrupt") {
+    await clearSession(profile);
     print(
       !!opts.json,
-      { ok: true, baseUrl: session!.baseUrl },
-      () => `logged out of ${session!.baseUrl}`,
+      { ok: true, alreadyLoggedOut: true, removedCorruptSession: true },
+      () => `removed corrupt session file (profile "${profile}")`,
+    );
+    return;
+  }
+
+  const { session } = state;
+  try {
+    const api = createClient(session.baseUrl, {
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+    });
+    await api.auth.logout({ refreshToken: session.refreshToken });
+    await clearSession(profile);
+    print(
+      !!opts.json,
+      { ok: true, baseUrl: session.baseUrl },
+      () => `logged out of ${session.baseUrl}`,
     );
   } catch (err: any) {
     fail(!!opts.json, err?.code ?? "LOGOUT_FAILED", err.message);
   }
+});
+
+export const whoami = new Command().name("whoami").action(async () => {
+  const opts = program.opts();
+  const profile = getProfile(opts.profile);
+  const state = await loadSessionState(profile);
+
+  if (state.status === "missing") {
+    print(
+      !!opts.json,
+      { loggedIn: false, reason: "missing" },
+      () => `not logged in (profile "${profile}"), run "dockside login --profile ${profile}"`,
+    );
+    return;
+  }
+
+  if (state.status === "corrupt") {
+    print(
+      !!opts.json,
+      { loggedIn: false, reason: "corrupt" },
+      () => `session corrupt (profile "${profile}"), run "dockside login --profile ${profile}"`,
+    );
+    return;
+  }
+
+  const { session } = state;
+  const claims = decodeAccessClaims(session.accessToken);
+
+  if (claims == null) {
+    print(
+      !!opts.json,
+      { loggedIn: true, profile, baseUrl: session.baseUrl, username: null, role: null },
+      () => `logged in to ${session.baseUrl} (identity claims unreadable)`,
+    );
+    return;
+  }
+
+  print(
+    !!opts.json,
+    { loggedIn: true, profile, baseUrl: session.baseUrl, ...claims },
+    () => `${claims.username} (${claims.role}) — profile "${profile}" @ ${session.baseUrl}`,
+  );
 });
