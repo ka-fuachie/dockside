@@ -181,13 +181,25 @@ public class DeploymentUploadTest {
       .headers(h -> h.setBearerAuth(dev))
       .retrieve().toEntity(SiteResponse.class);
     assertThat(curr.getStatusCode().is2xxSuccessful()).isTrue();
-    assertThat(curr.getBody().currentVersion()).isEqualTo(2);
+    // rollback only queues a repoint job; currentVersion moves on activate
+    assertThat(curr.getBody().currentVersion()).isNull();
+
+    // simulate the worker finishing the repoint
+    var act = client.post().uri("/agent/deployments/" + v2 + "/activate")
+      .headers(h -> h.set("X-Agent-Token", agent))
+      .retrieve().toEntity(SiteResponse.class);
+    assertThat(act.getBody().currentVersion()).isEqualTo(2);
 
     var rb = client.post().uri("/deployments/" + v1 + "/rollback")
       .headers(h -> h.setBearerAuth(dev))
       .retrieve().toEntity(SiteResponse.class);
     assertThat(rb.getStatusCode().is2xxSuccessful()).isTrue();
-    assertThat(rb.getBody().currentVersion()).isEqualTo(1);
+    assertThat(rb.getBody().currentVersion()).isEqualTo(2);
+
+    var act1 = client.post().uri("/agent/deployments/" + v1 + "/activate")
+      .headers(h -> h.set("X-Agent-Token", agent))
+      .retrieve().toEntity(SiteResponse.class);
+    assertThat(act1.getBody().currentVersion()).isEqualTo(1);
 
     var v3 = uploadVersion(siteId, dev, "index.html");
     client.post().uri("/agent/deployments/" + v3 + "/result")
