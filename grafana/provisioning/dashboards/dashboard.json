@@ -448,7 +448,7 @@
                       "spec": {
                         "editorMode": "code",
                         "expr": "dockside_worker_last_tick_duration_ms",
-                        "legendFormat": "__auto",
+                        "legendFormat": "worker",
                         "range": true
                       },
                       "version": "v0"
@@ -741,8 +741,8 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\"}[5m]))",
-                        "legendFormat": "__auto",
+                        "expr": "sum(increase(http_server_requests_seconds_count{status=~\"5..\"}[5m]))",
+                        "legendFormat": "5xx",
                         "range": true
                       },
                       "version": "v0"
@@ -758,7 +758,7 @@
           "description": "",
           "id": 8,
           "links": [],
-          "title": "5xx errors (5m rate)",
+          "title": "5xx errors (per 5m)",
           "vizConfig": {
             "group": "timeseries",
             "kind": "VizConfig",
@@ -811,11 +811,11 @@
                       },
                       {
                         "color": "yellow",
-                        "value": 0.01
+                        "value": 1
                       },
                       {
                         "color": "red",
-                        "value": 0.1
+                        "value": 5
                       }
                     ]
                   },
