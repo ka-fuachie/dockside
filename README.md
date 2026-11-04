@@ -1,6 +1,17 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.svg">
+  <img src="docs/logo-light.svg" alt="dockside" width="80" align="left">
+</picture>
+
 # dockside
 
 A minimal internal static-site hosting platform. Upload a zip, an HTML file, or a folder, get a versioned site served by Nginx, with rollbacks, health checks, and a small dashboard to manage it.
+
+<br clear="left">
+
+![Sites list — status, versions, health](docs/screenshots/dashboard.png)
+
+![Grafana — deploys and site health](docs/screenshots/grafana.png)
 
 ## Architecture
 
