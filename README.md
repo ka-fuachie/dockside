@@ -3,7 +3,7 @@
   <img src="docs/logo-light.svg" alt="dockside" width="80" align="left">
 </picture>
 
-# dockside
+# Dockside
 
 A minimal internal static-site hosting platform. Upload a zip, an HTML file, or a folder, get a versioned site served by Nginx, with rollbacks, health checks, and a small dashboard to manage it.
 
