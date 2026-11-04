@@ -9,9 +9,11 @@ A minimal internal static-site hosting platform. Upload a zip, an HTML file, or 
 
 <br clear="left">
 
-![Sites list — status, versions, health](docs/screenshots/dashboard.png)
+![Sites list: status, versions, health](docs/screenshots/dashboard.png)
+*The dashboard: every site with its live status, latest and current version.*
 
-![Grafana — deploys and site health](docs/screenshots/grafana.png)
+![Grafana: deploys and site health](docs/screenshots/grafana.png)
+*Grafana: deploys, per-site health and latency, and a caught 5xx incident.*
 
 ## Architecture
 
