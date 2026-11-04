@@ -1,55 +1,17 @@
-## Solid `with-tailwindcss` template
+# web
 
-This is `basic` plus [Tailwind CSS](https://tailwindcss.com) v4 — same routes, same demo, same tests; the pages are restyled with utility classes and `src/App.css` shrinks to one line. The diff against `basic` is the documentation of what Tailwind changes.
+SolidJS 2.0 SSR dashboard for site list/detail, deployments with incident logs, rollback, user management.
 
-**Deployment contract** (inherited from `basic`): zero server dependencies — `vite build` emits a purely static site; deploy `dist/client` anywhere. No server, no `start` script: Node hosts that run `npm start` after building (Firebase App Hosting, most buildpacks) need either the platform's static product or the SSR flip — see `basic`'s README.
+## Architecture
 
-## How Tailwind fits this stack
+The app is server-rendered: every API request is made by the web backend, so tokens and secrets never reach the client.
 
-- The `tailwindcss()` Vite plugin (from `@tailwindcss/vite`, registered in `vite.config.ts`) scans your source files for class names and generates exactly that CSS. There is no `tailwind.config.js` — v4 is configured in CSS, and the default setup needs none.
-- `src/App.css` is the stylesheet: `@import 'tailwindcss';` pulls in the preflight reset and the generated utilities. It stays imported by `src/App.tsx`, so it flows into the prerendered document shell exactly like any app CSS — nothing about the turnkey setup changes.
-- Element defaults are reset by preflight, so styling lives in `class` attributes (see the restyled pages under `src/routes`); site-wide element rules can be added back in `src/App.css` with `@layer base`.
-- If a class name doesn't apply, it usually wasn't seen by the scanner: class names must appear as complete strings in source (no runtime string-building).
+API calls go over the Docker network in prod (api & web are peers behind Nginx), which keeps them fast and off the public internet.
 
-Everything else — file-system routing, data loading, testing, the one-boolean `ssr: true` flip — is `basic`; see its README.
+Live data is periodic polling (Solid Router `liveQuery` with server-side polling producers) to keep the UI showing fresh data.
 
-## Usage
-
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
-
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
+## Development
 
 ```bash
-$ npm install # or pnpm install or yarn install
+pnpm dev:web    # from the repo root
 ```
-
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm run dev`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-
-### `npm run build`
-
-Builds the static production site to `dist/client`, routes code-split, CSS pruned to the classes actually used.
-
-### `npm run serve`
-
-Serves the production build locally.
-
-### `npm test`
-
-Runs the test suite.
-
-## Deployment
-
-Deploy the `dist/client` folder to any static host provider (netlify, surge, now, etc.)
-
-## This project was created with the [Solid CLI](https://github.com/solidjs-community/solid-cli)
